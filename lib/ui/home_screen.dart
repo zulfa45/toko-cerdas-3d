@@ -44,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
             // Main Content
             Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -52,9 +52,9 @@ class HomeScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Store Name Badge
+                        // Store Name Badge with Logo
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -64,12 +64,21 @@ class HomeScreen extends ConsumerWidget {
                           ),
                           child: Row(
                             children: [
-                              const Text('🏪', style: TextStyle(fontSize: 20)),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  width: 24,
+                                  height: 24,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Text('🏪', style: TextStyle(fontSize: 18)),
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 state.shopName,
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF16A085),
                                 ),
@@ -82,7 +91,7 @@ class HomeScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFFF9E6),
                                 borderRadius: BorderRadius.circular(20),
@@ -93,13 +102,13 @@ class HomeScreen extends ConsumerWidget {
                               ),
                               child: Row(
                                 children: [
-                                  const Text('🪙', style: TextStyle(fontSize: 18)),
+                                  const Text('🪙', style: TextStyle(fontSize: 16)),
                                   const SizedBox(width: 6),
                                   Text(
                                     '${state.coins} Koin',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: 13,
                                       color: Color(0xFFD35400),
                                     ),
                                   ),
@@ -111,48 +120,91 @@ class HomeScreen extends ConsumerWidget {
                             // Parent Gate Button
                             IconButton(
                               onPressed: () => _showParentSecurityDialog(context, ref),
-                              icon: const Icon(Icons.lock, color: Color(0xFF7F8C8D)),
+                              icon: const Icon(Icons.lock, color: Color(0xFF7F8C8D), size: 20),
                               tooltip: 'Area Orang Tua',
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 elevation: 2,
+                                padding: const EdgeInsets.all(8),
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
 
-                    // Big Title & Logo
-                    const Text(
-                      'TOKO CERDAS 3D',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF16A085),
-                        letterSpacing: 1.2,
-                        shadows: [
-                          Shadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
-                        ],
-                      ),
-                    ),
-                    const Text(
-                      'Simulasi Toko Sembako & Belajar Matematika Uang Rupiah',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF5D6D7E),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    // Big Header with 3D App Logo Image
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // 3D Game Logo
+                        Container(
+                          width: 84,
+                          height: 84,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: const Color(0xFF16A085),
+                                child: const Center(
+                                  child: Text('🏪', style: TextStyle(fontSize: 40)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
 
-                    // Age Group Selector (PRD Bab 3 & 8)
+                        // Title & Subtitle
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'TOKO CERDAS 3D',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF16A085),
+                                letterSpacing: 1.1,
+                                shadows: [
+                                  Shadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Simulasi Toko Sembako & Belajar Berhitung Uang Rupiah',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF5D6D7E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Age Group Selector
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: const [
                           BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
                         ],
@@ -165,7 +217,7 @@ class HomeScreen extends ConsumerWidget {
                             isSelected: state.ageGroup == '6-8',
                             onTap: () => ref.read(gameControllerProvider.notifier).setAgeGroup('6-8'),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           _buildAgeOption(
                             label: '🧑 Umur 9–12 Tahun\n(Mode Jalan Bebas)',
                             isSelected: state.ageGroup == '9-12',
@@ -174,18 +226,9 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     // 5-Day Level Selector Cards
-                    const Text(
-                      'Pilih Hari Berjualan:',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: LevelConfig.allLevels.map((lvl) {
@@ -197,12 +240,12 @@ class HomeScreen extends ConsumerWidget {
                             ref.read(gameControllerProvider.notifier).startDayBriefing(lvl.day);
                           },
                           child: Container(
-                            width: 100,
-                            margin: const EdgeInsets.symmetric(horizontal: 6),
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                            width: 95,
+                            margin: const EdgeInsets.symmetric(horizontal: 5),
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                             decoration: BoxDecoration(
                               color: isSelected ? const Color(0xFF16A085) : Colors.white,
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected ? const Color(0xFF16A085) : const Color(0xFFD5D8DC),
                                 width: 2,
@@ -217,17 +260,17 @@ class HomeScreen extends ConsumerWidget {
                                   'Hari ${lvl.day}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     color: isSelected ? Colors.white : const Color(0xFF2C3E50),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: List.generate(3, (starIdx) {
                                     return Icon(
                                       Icons.star,
-                                      size: 15,
+                                      size: 14,
                                       color: starIdx < stars ? const Color(0xFFF1C40F) : Colors.grey.shade300,
                                     );
                                   }),
@@ -238,12 +281,12 @@ class HomeScreen extends ConsumerWidget {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 18),
 
                     // Big Play Button
                     SizedBox(
-                      width: 320,
-                      height: 60,
+                      width: 290,
+                      height: 54,
                       child: ElevatedButton(
                         onPressed: () {
                           ref.read(gameControllerProvider.notifier).startDayBriefing(state.currentDay);
@@ -251,18 +294,17 @@ class HomeScreen extends ConsumerWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF39C12),
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-                          elevation: 6,
-                          shadowColor: const Color(0xFFD35400).withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          elevation: 5,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.play_arrow_rounded, size: 36),
+                            const Icon(Icons.play_arrow_rounded, size: 32),
                             const SizedBox(width: 8),
                             Text(
                               'Mulai Hari ${state.currentDay} ▶',
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -286,16 +328,16 @@ class HomeScreen extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF16A085) : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : const Color(0xFF7F8C8D),
           ),

@@ -69,8 +69,19 @@ class HudOverlay extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 22,
+                              height: 22,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Text('🏪', style: TextStyle(fontSize: 16)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Text(
-                            '🏪 ${state.shopName} — Hari ${state.currentDay}',
+                            '${state.shopName} — Hari ${state.currentDay}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
