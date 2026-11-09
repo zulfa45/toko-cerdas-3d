@@ -150,6 +150,10 @@ class LevelConfig {
 
     final orders = <CustomerOrder>[];
     final allProducts = ProductCatalog.initialCatalog;
+    // For Day 1-3, prioritize items directly visible on the front warung shelves
+    final availableProducts = config.day <= 3
+        ? allProducts.where((p) => ['keripik', 'biskuit', 'susu', 'indomie', 'aqua', 'apel'].contains(p.id)).toList()
+        : allProducts;
 
     for (int i = 0; i < config.customerCount; i++) {
       final name = customerNames[i % customerNames.length];
@@ -160,7 +164,7 @@ class LevelConfig {
           ? 1
           : 1 + random.nextInt(config.maxItemsPerOrder);
 
-      final shuffled = List<Product>.from(allProducts)..shuffle(random);
+      final shuffled = List<Product>.from(availableProducts)..shuffle(random);
       final selectedProducts = shuffled.take(numItems).toList();
 
       final orderItems = <OrderItem>[];

@@ -21,8 +21,8 @@ class Product {
     required this.iconEmoji,
   });
 
-  String get formattedPrice {
-    final str = priceIdr.toString();
+  static String formatRupiah(int amount, {bool withSpace = false}) {
+    final str = amount.toString();
     final buffer = StringBuffer();
     int count = 0;
     for (int i = str.length - 1; i >= 0; i--) {
@@ -32,13 +32,84 @@ class Product {
         buffer.write('.');
       }
     }
-    return 'Rp${buffer.toString().split('').reversed.join()}';
+    final prefix = withSpace ? 'Rp ' : 'Rp';
+    return '$prefix${buffer.toString().split('').reversed.join()}';
   }
+
+  String get formattedPrice => formatRupiah(priceIdr, withSpace: false);
 }
 
 class ProductCatalog {
   static const List<Product> initialCatalog = [
-    // Sembako Pokok
+    // --- Produk Utama Sesuai Gambar Referensi Warung ---
+    Product(
+      id: 'keripik',
+      name: 'Keripik',
+      categoryId: 'makanan_kering',
+      categoryName: 'Makanan Ringan',
+      unitLabel: '1 bungkus',
+      priceIdr: 2000,
+      modelAsset: 'models/keripik.glb',
+      shelfId: 'rak_kiri_atas',
+      iconEmoji: '🥔',
+    ),
+    Product(
+      id: 'biskuit',
+      name: 'Biskuit',
+      categoryId: 'makanan_kering',
+      categoryName: 'Makanan Ringan',
+      unitLabel: '1 bungkus',
+      priceIdr: 2500,
+      modelAsset: 'models/biskuit.glb',
+      shelfId: 'rak_kiri_tengah',
+      iconEmoji: '🍪',
+    ),
+    Product(
+      id: 'susu',
+      name: 'Susu',
+      categoryId: 'minuman',
+      categoryName: 'Minuman Segar',
+      unitLabel: '1 kotak',
+      priceIdr: 3000,
+      modelAsset: 'models/susu.glb',
+      shelfId: 'rak_kiri_bawah',
+      iconEmoji: '🥛',
+    ),
+    Product(
+      id: 'indomie',
+      name: 'Indomie Cup',
+      categoryId: 'makanan_kering',
+      categoryName: 'Makanan Instan',
+      unitLabel: '1 cup',
+      priceIdr: 3500,
+      modelAsset: 'models/indomie.glb',
+      shelfId: 'rak_kanan_atas',
+      iconEmoji: '🍜',
+    ),
+    Product(
+      id: 'aqua',
+      name: 'Air Mineral AQUA',
+      categoryId: 'minuman',
+      categoryName: 'Minuman Dingin',
+      unitLabel: '1 botol',
+      priceIdr: 2500,
+      modelAsset: 'models/aqua.glb',
+      shelfId: 'rak_kanan_tengah',
+      iconEmoji: '💧',
+    ),
+    Product(
+      id: 'apel',
+      name: 'Apel Segar',
+      categoryId: 'buah',
+      categoryName: 'Buah Segar',
+      unitLabel: '1 porsi (3 buah)',
+      priceIdr: 5000,
+      modelAsset: 'models/apel.glb',
+      shelfId: 'peti_buah',
+      iconEmoji: '🍎',
+    ),
+
+    // --- Sembako Tambahan ---
     Product(
       id: 'beras_1kg',
       name: 'Beras',
@@ -94,30 +165,6 @@ class ProductCatalog {
       shelfId: 'rak_sembako',
       iconEmoji: '🥡',
     ),
-
-    // Makanan Kering
-    Product(
-      id: 'mie_instan',
-      name: 'Mie Instan',
-      categoryId: 'makanan_kering',
-      categoryName: 'Makanan Kering',
-      unitLabel: '1 bungkus',
-      priceIdr: 3000,
-      modelAsset: 'models/mie.glb',
-      shelfId: 'rak_makanan',
-      iconEmoji: '🍜',
-    ),
-    Product(
-      id: 'biskuit_pak',
-      name: 'Biskuit',
-      categoryId: 'makanan_kering',
-      categoryName: 'Makanan Kering',
-      unitLabel: '1 pak',
-      priceIdr: 8000,
-      modelAsset: 'models/biskuit.glb',
-      shelfId: 'rak_makanan',
-      iconEmoji: '🍪',
-    ),
     Product(
       id: 'roti_tawar',
       name: 'Roti Tawar',
@@ -128,19 +175,6 @@ class ProductCatalog {
       modelAsset: 'models/roti.glb',
       shelfId: 'rak_makanan',
       iconEmoji: '🍞',
-    ),
-
-    // Minuman
-    Product(
-      id: 'susu_uht',
-      name: 'Susu UHT',
-      categoryId: 'minuman',
-      categoryName: 'Minuman',
-      unitLabel: '1 kotak',
-      priceIdr: 6000,
-      modelAsset: 'models/susu.glb',
-      shelfId: 'rak_minuman',
-      iconEmoji: '🥛',
     ),
     Product(
       id: 'teh_celup',
@@ -164,19 +198,6 @@ class ProductCatalog {
       shelfId: 'rak_minuman',
       iconEmoji: '☕',
     ),
-    Product(
-      id: 'air_mineral',
-      name: 'Air Mineral',
-      categoryId: 'minuman',
-      categoryName: 'Minuman',
-      unitLabel: '1 botol',
-      priceIdr: 4000,
-      modelAsset: 'models/air.glb',
-      shelfId: 'rak_minuman',
-      iconEmoji: '💧',
-    ),
-
-    // Bumbu Dapur
     Product(
       id: 'garam_dapur',
       name: 'Garam Dapur',
@@ -210,8 +231,6 @@ class ProductCatalog {
       shelfId: 'rak_bumbu',
       iconEmoji: '🌶️',
     ),
-
-    // Kebutuhan Rumah
     Product(
       id: 'sabun_mandi',
       name: 'Sabun Mandi',
@@ -222,28 +241,6 @@ class ProductCatalog {
       modelAsset: 'models/sabun.glb',
       shelfId: 'rak_rumah',
       iconEmoji: '🧼',
-    ),
-    Product(
-      id: 'pasta_gigi',
-      name: 'Pasta Gigi',
-      categoryId: 'kebutuhan_rumah',
-      categoryName: 'Kebutuhan Rumah',
-      unitLabel: '1 tube',
-      priceIdr: 9000,
-      modelAsset: 'models/pastagigi.glb',
-      shelfId: 'rak_rumah',
-      iconEmoji: '🪥',
-    ),
-    Product(
-      id: 'deterjen',
-      name: 'Deterjen',
-      categoryId: 'kebutuhan_rumah',
-      categoryName: 'Kebutuhan Rumah',
-      unitLabel: '1 bungkus',
-      priceIdr: 12000,
-      modelAsset: 'models/deterjen.glb',
-      shelfId: 'rak_rumah',
-      iconEmoji: '🧺',
     ),
   ];
 

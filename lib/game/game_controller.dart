@@ -514,7 +514,7 @@ class GameController extends Notifier<GameState> {
   void process3DMessage(String rawJson) {
     try {
       final data = jsonDecode(rawJson) as Map<String, dynamic>;
-      final type = data['type'] as String?;
+      final type = (data['type'] as String?)?.toLowerCase();
 
       switch (type) {
         case 'scene_ready':
@@ -527,16 +527,35 @@ class GameController extends Notifier<GameState> {
         case 'customer_arrived':
           onCustomerArrived();
           break;
+        case 'customer_gone':
+          break;
+        case 'cashier_arrived':
+          if (state.isBasketComplete) {
+            openCashierPanel();
+          } else {
+            state = state.copyWith(
+              toastMessage: 'Lengkapi keranjang belanja dulu sebelum ke kasir ya!',
+            );
+          }
+          break;
+        case 'item_clicked':
         case 'product_tapped':
           final productId = data['productId'] as String?;
           if (productId != null) {
-            final product = ProductCatalog.findById(productId);
-            if (product != null) {
-              inspectProduct(product);
+            final order = state.currentOrder;
+            final isNeeded = order?.items.any((it) => it.productId == productId) ?? false;
+            if (isNeeded) {
+              pickItemToBasket(productId);
+            } else {
+              final product = ProductCatalog.findById(productId);
+              if (product != null) {
+                inspectProduct(product);
+              }
             }
           }
           break;
         case 'shelf_tapped':
+        case 'shelf_arrived':
           final shelfId = data['shelfId'] as String?;
           if (shelfId != null) {
             setActiveShelf(shelfId);

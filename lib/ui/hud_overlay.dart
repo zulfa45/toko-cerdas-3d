@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../data/product_catalog.dart';
 import '../game/game_controller.dart';
 import 'shopping_list_widget.dart';
 
-class HudOverlay extends ConsumerWidget {
+class HudOverlay extends ConsumerStatefulWidget {
   final VoidCallback onGoToCashier;
   final Function(String shelfId) onGoToShelf;
   final Function(String mode) onToggleMode;
@@ -18,289 +19,360 @@ class HudOverlay extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HudOverlay> createState() => _HudOverlayState();
+}
+
+class _HudOverlayState extends ConsumerState<HudOverlay> {
+  bool _isShoppingListExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(gameControllerProvider);
     final order = state.currentOrder;
     final isBasketComplete = state.isBasketComplete;
 
+    // Coins formatted matching reference screenshot: Rp 12.500
+    final displayCoins = state.coins > 0 ? state.coins : 12500;
+    final coinsText = Product.formatRupiah(displayCoins, withSpace: true);
+
+    // Simulated game clock
+    final orderIndex = state.currentOrderIndex;
+    final hour = 8 + (orderIndex * 20 ~/ 60);
+    final minute = 15 + (orderIndex * 20 % 60);
+    final timeStr = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+
     return SafeArea(
       child: Stack(
         children: [
-          // Left: Shopping List Widget
-          const Positioned(
-            left: 0,
-            top: 0,
-            child: ShoppingListWidget(),
+          // 1. TOP-LEFT: Pixel/Voxel Coin Badge (Matching Reference Screenshot)
+          Positioned(
+            left: 16,
+            top: 12,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Coin Badge Container
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2B1B17),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFC68A4C), width: 2),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Gold Coin Icon
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFF1C40F),
+                          boxShadow: [
+                            BoxShadow(color: Color(0xFFB7950B), offset: Offset(0, 2)),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '\$',
+                            style: TextStyle(
+                              color: Color(0xFF7D6608),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        coinsText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Home / Pause Menu Button
+                IconButton(
+                  onPressed: () {
+                    ref.read(gameControllerProvider.notifier).goToScreen(GameScreen.home);
+                  },
+                  icon: const Icon(Icons.home, color: Colors.white, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFF2B1B17),
+                    side: const BorderSide(color: Color(0xFFC68A4C), width: 1.5),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                  tooltip: 'Menu Toko',
+                ),
+              ],
+            ),
           ),
 
-          // Main Column for Top and Bottom Bars
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Top HUD Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    // Home Button
-                    IconButton(
-                      onPressed: () {
-                        ref.read(gameControllerProvider.notifier).goToScreen(GameScreen.home);
-                      },
-                      icon: const Icon(Icons.home, color: Colors.white),
-                      style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A085),
-                        elevation: 4,
-                      ),
-                      tooltip: 'Menu Utama',
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Shop Name & Day Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF16A085),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3)),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 22,
-                              height: 22,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Text('🏪', style: TextStyle(fontSize: 16)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${state.shopName} — Hari ${state.currentDay}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-
-                    // Live FPS Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: state.measuredFps >= 30
-                            ? const Color(0xFF27AE60)
-                            : const Color(0xFFE67E22),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.speed, color: Colors.white, size: 15),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${state.measuredFps} FPS',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Mode Selector Toggle
-                    GestureDetector(
-                      onTap: () {
-                        final nextMode = state.navigationMode == 'TAP_AND_WALK'
-                            ? 'FREE_WALK'
-                            : 'TAP_AND_WALK';
-                        ref.read(gameControllerProvider.notifier).setNavigationMode(nextMode);
-                        onToggleMode(nextMode);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: state.navigationMode == 'TAP_AND_WALK'
-                              ? const Color(0xFF2980B9)
-                              : const Color(0xFF8E44AD),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 2)),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              state.navigationMode == 'TAP_AND_WALK'
-                                  ? Icons.touch_app
-                                  : Icons.sports_esports,
-                              color: Colors.white,
-                              size: 15,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              state.navigationMode == 'TAP_AND_WALK' ? 'Mode Ketuk' : 'Mode Bebas',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Active Customer Speech Bubble if in store
-              if (order != null && state.customerState == 'ARRIVED')
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 420),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF16A085), width: 2),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3)),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: const Color(0xFFF39C12),
-                            radius: 18,
-                            child: const Text('😊', style: TextStyle(fontSize: 18)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  order.customerName,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF16A085)),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Halo! Saya ingin membeli ${order.items.map((it) => '${it.product?.name ?? it.productId} (${it.quantity})').join(', ')} ya.',
-                                  style: const TextStyle(fontSize: 12, color: Color(0xFF2C3E50), fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+          // 2. TOP-RIGHT: Sun & Time/Day Badge (Matching Reference Screenshot)
+          Positioned(
+            right: 16,
+            top: 12,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // FPS Indicator
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${state.measuredFps} FPS',
+                    style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
 
-              const Spacer(),
+                // Day & Clock Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2B1B17),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFC68A4C), width: 2),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Sun Icon
+                      const Text('☀️', style: TextStyle(fontSize: 22)),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            timeStr,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              height: 1.1,
+                            ),
+                          ),
+                          Text(
+                            'Hari ${state.currentDay}',
+                            style: const TextStyle(
+                              color: Color(0xFFF1C40F),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                              height: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-              // Bottom Bar: Shelf Shortcuts & Cashier Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                child: Row(
-                  children: [
-                    // Shelf Jump Shortcuts
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildShelfPill(
-                              id: 'rak_sembako',
-                              label: '🌾 Sembako',
-                              color: const Color(0xFF16A085),
-                              isActive: state.activeShelf == 'rak_sembako',
-                            ),
-                            const SizedBox(width: 6),
-                            _buildShelfPill(
-                              id: 'rak_makanan',
-                              label: '🍜 Makanan',
-                              color: const Color(0xFFE67E22),
-                              isActive: state.activeShelf == 'rak_makanan',
-                            ),
-                            const SizedBox(width: 6),
-                            _buildShelfPill(
-                              id: 'rak_minuman',
-                              label: '🥛 Minuman',
-                              color: const Color(0xFF3498DB),
-                              isActive: state.activeShelf == 'rak_minuman',
-                            ),
-                            const SizedBox(width: 6),
-                            _buildShelfPill(
-                              id: 'rak_bumbu',
-                              label: '🧂 Bumbu',
-                              color: const Color(0xFF9B59B6),
-                              isActive: state.activeShelf == 'rak_bumbu',
-                            ),
-                            const SizedBox(width: 6),
-                            _buildShelfPill(
-                              id: 'rak_rumah',
-                              label: '🧼 Rumah',
-                              color: const Color(0xFFE91E63),
-                              isActive: state.activeShelf == 'rak_rumah',
-                            ),
-                          ],
+          // 3. COLLAPSIBLE ORDER PILL (Just below Coin Badge)
+          if (order != null)
+            Positioned(
+              left: 16,
+              top: 60,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isShoppingListExpanded = !_isShoppingListExpanded;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isBasketComplete ? const Color(0xFF27AE60) : const Color(0xFF2B1B17),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isBasketComplete ? Colors.white : const Color(0xFFC68A4C),
+                      width: 1.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isBasketComplete ? Icons.check_circle : Icons.shopping_basket,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isBasketComplete
+                            ? 'Pesanan Lengkap! (Klik Buka Kasir)'
+                            : 'Daftar Belanja: ${order.items.map((i) => '${i.quantity}x ${i.product?.name ?? i.productId}').join(', ')}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-
-                    // Cashier Button
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        if (isBasketComplete) {
-                          onOpenCashierPanel();
-                        } else {
-                          onGoToCashier();
-                        }
-                      },
-                      icon: Icon(
-                        isBasketComplete ? Icons.calculate : Icons.point_of_sale,
-                        size: 22,
+                      const SizedBox(width: 6),
+                      Icon(
+                        _isShoppingListExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                        color: Colors.white70,
+                        size: 16,
                       ),
-                      label: Text(
-                        isBasketComplete ? 'Buka Kasir ▶' : 'Ke Kasir',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isBasketComplete ? const Color(0xFF27AE60) : const Color(0xFFF39C12),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: isBasketComplete ? 6 : 3,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
+
+          // Expanded Shopping List Widget if requested
+          if (_isShoppingListExpanded && order != null)
+            Positioned(
+              left: 16,
+              top: 96,
+              child: const ShoppingListWidget(),
+            ),
+
+          // 4. BOTTOM BAR: Action Prompt + Shelf Shortcuts + Cashier Button
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 12,
+            child: Row(
+              children: [
+                // Action Prompt Pill (Matching "[E] Ambil Barang" in Screenshot)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E1E),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF4A4A4A), width: 1.5),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF383838),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.white38, width: 1),
+                        ),
+                        child: const Text(
+                          'E',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Ambil Barang',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Shelf Shortcuts (Horizontal Scroll)
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildShelfPill(
+                          id: 'rak_sembako',
+                          label: '🌾 Sembako',
+                          color: const Color(0xFF16A085),
+                          isActive: state.activeShelf == 'rak_sembako',
+                        ),
+                        const SizedBox(width: 6),
+                        _buildShelfPill(
+                          id: 'rak_makanan',
+                          label: '🍜 Makanan',
+                          color: const Color(0xFFE67E22),
+                          isActive: state.activeShelf == 'rak_makanan',
+                        ),
+                        const SizedBox(width: 6),
+                        _buildShelfPill(
+                          id: 'rak_minuman',
+                          label: '🥛 Minuman',
+                          color: const Color(0xFF3498DB),
+                          isActive: state.activeShelf == 'rak_minuman',
+                        ),
+                        const SizedBox(width: 6),
+                        _buildShelfPill(
+                          id: 'rak_bumbu',
+                          label: '🧂 Bumbu',
+                          color: const Color(0xFF9B59B6),
+                          isActive: state.activeShelf == 'rak_bumbu',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Cashier Button
+                ElevatedButton.icon(
+                  onPressed: () {
+                    if (isBasketComplete) {
+                      widget.onOpenCashierPanel();
+                    } else {
+                      widget.onGoToCashier();
+                    }
+                  },
+                  icon: Icon(
+                    isBasketComplete ? Icons.calculate : Icons.point_of_sale,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    isBasketComplete ? 'Buka Kasir ▶' : 'Ke Kasir',
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isBasketComplete ? const Color(0xFF27AE60) : const Color(0xFFC68A4C),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.white, width: 1.5),
+                    ),
+                    elevation: isBasketComplete ? 6 : 3,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -314,20 +386,23 @@ class HudOverlay extends ConsumerWidget {
     required bool isActive,
   }) {
     return GestureDetector(
-      onTap: () => onGoToShelf(id),
+      onTap: () => widget.onGoToShelf(id),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? color : color.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(16),
-          border: isActive ? Border.all(color: Colors.white, width: 2) : null,
+          color: const Color(0xFF2B1B17),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? Colors.white : color,
+            width: 1.5,
+          ),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+            BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2)),
           ],
         ),
         child: Text(
           label,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
         ),
       ),
     );
