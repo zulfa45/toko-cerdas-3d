@@ -150,10 +150,10 @@ class LevelConfig {
 
     final orders = <CustomerOrder>[];
     final allProducts = ProductCatalog.initialCatalog;
-    // For Day 1-3, prioritize items directly visible on the front warung shelves
-    final availableProducts = config.day <= 3
-        ? allProducts.where((p) => ['keripik', 'biskuit', 'susu', 'indomie', 'aqua', 'apel'].contains(p.id)).toList()
-        : allProducts;
+    // Orders use items directly visible on the front warung shelves beside the cashier
+    final availableProducts = allProducts
+        .where((p) => ['keripik', 'biskuit', 'susu', 'indomie', 'aqua', 'apel'].contains(p.id))
+        .toList();
 
     for (int i = 0; i < config.customerCount; i++) {
       final name = customerNames[i % customerNames.length];

@@ -11,196 +11,220 @@ class DayBriefingScreen extends ConsumerWidget {
     final level = state.levelConfig;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFD7EDF7),
+      backgroundColor: const Color(0xFF2B1B17),
       body: SafeArea(
-        child: Center(
-          child: Container(
-            width: 600,
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFF16A085), width: 3),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 20,
-                  offset: Offset(0, 8),
-                ),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF3E2723),
+                Color(0xFF2B1B17),
+                Color(0xFF1B0F0B),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Day Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF16A085),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'HARI ${level.day}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      letterSpacing: 1.0,
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 560),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3D2314),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFC68A4C), width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black54,
+                      blurRadius: 18,
+                      offset: Offset(0, 6),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 14),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Day Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC68A4C),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Text(
+                        'HARI ${level.day}',
+                        style: const TextStyle(
+                          color: Color(0xFF2B1B17),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
-                // Title
-                Text(
-                  level.title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
+                    // Title
+                    Text(
+                      level.title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFF1C40F),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 14),
 
-                // Customer Target & Target Skill Info Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4FBF7),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFC3E6CB)),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
+                    // Customer Target & Target Skill Info Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2B1B17),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF8D4F27), width: 1.5),
+                      ),
+                      child: Column(
                         children: [
-                          const Icon(Icons.people_alt, color: Color(0xFF16A085), size: 24),
+                          Row(
+                            children: [
+                              const Icon(Icons.people_alt, color: Color(0xFFF1C40F), size: 22),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Target Hari Ini: Melayani ${level.customerCount} Pembeli',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 14, color: Colors.white24),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.school, color: Color(0xFFE67E22), size: 22),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Kemampuan yang Dilatih:',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFC68A4C),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      level.skillTrained,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Math Tip Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E140F),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFC68A4C), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('💡', style: TextStyle(fontSize: 20)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Target Hari Ini: Melayani ${level.customerCount} Pembeli',
+                              level.mathTip,
                               style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2C3E50),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFF1C40F),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const Divider(height: 16),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.school, color: Color(0xFFF39C12), size: 24),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              ref.read(gameControllerProvider.notifier).goToScreen(GameScreen.home);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFC68A4C),
+                              side: const BorderSide(color: Color(0xFFC68A4C), width: 1.5),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                            child: const Text('Menu Utama', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 6,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              ref.read(gameControllerProvider.notifier).launchInStoreGameplay();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF27AE60),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                side: const BorderSide(color: Colors.white, width: 1.5),
+                              ),
+                              elevation: 4,
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text(
-                                  'Kemampuan yang Dilatih:',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF7F8C8D),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
+                                Icon(Icons.storefront, size: 22),
+                                SizedBox(width: 8),
                                 Text(
-                                  level.skillTrained,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF2C3E50),
-                                  ),
+                                  'Masuk ke Warung ▶',
+                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Math Tip Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF9E6),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFF1C40F)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text('💡', style: TextStyle(fontSize: 22)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          level.mathTip,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFB7950B),
-                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          ref.read(gameControllerProvider.notifier).goToScreen(GameScreen.home);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text('Kembali ke Menu', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      flex: 6,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ref.read(gameControllerProvider.notifier).launchInStoreGameplay();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF16A085),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 4,
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.storefront),
-                            SizedBox(width: 8),
-                            Text(
-                              'Masuk ke Toko ▶',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

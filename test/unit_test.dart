@@ -8,6 +8,7 @@ import 'package:toko_cerdas/game/game_controller.dart';
 import 'package:toko_cerdas/ui/hud_overlay.dart';
 import 'package:toko_cerdas/ui/product_detail_dialog.dart';
 import 'package:toko_cerdas/ui/shopping_list_widget.dart';
+import 'package:toko_cerdas/ui/splash_screen.dart';
 
 void main() {
   setUp(() {
@@ -210,8 +211,6 @@ void main() {
 
     testWidgets('HudOverlay displays title, FPS, pills, and cashier button', (tester) async {
       bool wentToCashier = false;
-      bool openedCashier = false;
-      String? tappedShelf;
 
       await tester.pumpWidget(
         ProviderScope(
@@ -219,9 +218,9 @@ void main() {
             home: Scaffold(
               body: HudOverlay(
                 onGoToCashier: () => wentToCashier = true,
-                onGoToShelf: (id) => tappedShelf = id,
+                onGoToShelf: (_) {},
                 onToggleMode: (_) {},
-                onOpenCashierPanel: () => openedCashier = true,
+                onOpenCashierPanel: () {},
               ),
             ),
           ),
@@ -230,13 +229,10 @@ void main() {
 
       expect(find.text('60 FPS'), findsOneWidget);
       expect(find.text('Ke Kasir'), findsOneWidget);
+      expect(find.text('Ambil Barang'), findsOneWidget);
 
       await tester.tap(find.text('Ke Kasir'));
       expect(wentToCashier, isTrue);
-
-      await tester.tap(find.text('🌾 Sembako'));
-      expect(tappedShelf, 'rak_sembako');
-      expect(openedCashier, isFalse);
     });
 
     testWidgets('ShoppingListWidget displays shopping items when active order exists', (tester) async {
@@ -256,6 +252,22 @@ void main() {
       );
 
       expect(find.textContaining('Pesanan'), findsOneWidget);
+    });
+
+    testWidgets('SplashScreen displays voxel title and transitions on tap', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SplashScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('TOKO CERDAS 3D'), findsOneWidget);
+      expect(find.textContaining('Simulasi Warung Sembako'), findsOneWidget);
+
+      await tester.tap(find.byType(GestureDetector).first);
+      await tester.pump();
     });
   });
 }

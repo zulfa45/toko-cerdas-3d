@@ -15,6 +15,7 @@ import 'hud_overlay.dart';
 import 'parent_dashboard_screen.dart';
 import 'product_detail_dialog.dart';
 import 'restock_screen.dart';
+import 'splash_screen.dart';
 
 class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
@@ -135,6 +136,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     });
 
     switch (gameState.currentScreen) {
+      case GameScreen.splash:
+        return const SplashScreen();
       case GameScreen.home:
         return const HomeScreen();
       case GameScreen.dayBriefing:

@@ -300,47 +300,7 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-
-                // Shelf Shortcuts (Horizontal Scroll)
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildShelfPill(
-                          id: 'rak_sembako',
-                          label: '🌾 Sembako',
-                          color: const Color(0xFF16A085),
-                          isActive: state.activeShelf == 'rak_sembako',
-                        ),
-                        const SizedBox(width: 6),
-                        _buildShelfPill(
-                          id: 'rak_makanan',
-                          label: '🍜 Makanan',
-                          color: const Color(0xFFE67E22),
-                          isActive: state.activeShelf == 'rak_makanan',
-                        ),
-                        const SizedBox(width: 6),
-                        _buildShelfPill(
-                          id: 'rak_minuman',
-                          label: '🥛 Minuman',
-                          color: const Color(0xFF3498DB),
-                          isActive: state.activeShelf == 'rak_minuman',
-                        ),
-                        const SizedBox(width: 6),
-                        _buildShelfPill(
-                          id: 'rak_bumbu',
-                          label: '🧂 Bumbu',
-                          color: const Color(0xFF9B59B6),
-                          isActive: state.activeShelf == 'rak_bumbu',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
+                const Spacer(),
 
                 // Cashier Button
                 ElevatedButton.icon(
@@ -375,35 +335,6 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildShelfPill({
-    required String id,
-    required String label,
-    required Color color,
-    required bool isActive,
-  }) {
-    return GestureDetector(
-      onTap: () => widget.onGoToShelf(id),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2B1B17),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isActive ? Colors.white : color,
-            width: 1.5,
-          ),
-          boxShadow: const [
-            BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2)),
-          ],
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-        ),
       ),
     );
   }

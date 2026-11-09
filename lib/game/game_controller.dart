@@ -6,6 +6,7 @@ import '../data/local_storage.dart';
 import '../data/product_catalog.dart';
 
 enum GameScreen {
+  splash,
   home,
   dayBriefing,
   inStore,
@@ -59,7 +60,7 @@ class GameState {
   final bool isAudioEnabled;
 
   const GameState({
-    this.currentScreen = GameScreen.home,
+    this.currentScreen = GameScreen.splash,
     this.currentDay = 1,
     this.shopName = 'Toko Cerdas',
     this.ageGroup = '6-8',
