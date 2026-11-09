@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>Toko Cerdas 3D Ruko Scene</title>
+  <title>Toko Cerdas 3D — Ruko Sembako</title>
   <style>
     * {
       box-sizing: border-box;
@@ -27,7 +27,6 @@
       top: 0;
       left: 0;
     }
-    /* Crosshair in the center */
     #reticle {
       position: absolute;
       top: 50%;
@@ -42,7 +41,7 @@
       pointer-events: none;
       z-index: 10;
     }
-    /* Virtual Joystick Overlay */
+    /* Virtual Joystick for Free Walk Mode */
     #joystick-zone {
       position: absolute;
       bottom: 24px;
@@ -50,8 +49,8 @@
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.18);
-      border: 2px dashed rgba(255, 255, 255, 0.4);
+      background: rgba(0, 0, 0, 0.22);
+      border: 2px dashed rgba(255, 255, 255, 0.5);
       display: none;
       touch-action: none;
       z-index: 20;
@@ -64,10 +63,9 @@
       height: 48px;
       border-radius: 50%;
       background: #ffffff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       pointer-events: none;
     }
-    /* Touch look area for right side */
     #look-zone {
       position: absolute;
       top: 0;
@@ -77,15 +75,14 @@
       z-index: 15;
       touch-action: none;
     }
-    /* Floating banner / tooltip in 3D canvas */
     #toast-bubble {
       position: absolute;
       top: 16px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(26, 43, 60, 0.88);
+      background: rgba(22, 43, 62, 0.90);
       color: #ffffff;
-      padding: 8px 18px;
+      padding: 8px 20px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
@@ -93,7 +90,7 @@
       transition: opacity 0.3s ease, transform 0.3s ease;
       opacity: 0;
       z-index: 30;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
   </style>
   <script src="three.min.js"></script>
@@ -110,7 +107,142 @@
   <div id="look-zone"></div>
 
   <script>
-    // --- Post Message bridge to Flutter ---
+    // ==========================================
+    // 1. WEB AUDIO SYNTHESIZER (ZERO-ASSET SOUND ENGINE)
+    // ==========================================
+    let audioCtx = null;
+    let isAudioEnabled = true;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Play synthesized sound effects
+    window.playSfx = function(type) {
+      if (!isAudioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'door_bell') {
+          // Ting-tong door chime
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc1.type = 'sine';
+          osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(659.25, now); // E5
+          osc2.frequency.setValueAtTime(523.25, now + 0.18); // C5
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.22);
+          osc2.start(now + 0.18);
+          osc2.stop(now + 0.85);
+        } else if (type === 'item_click') {
+          // Crisp item pickup pop
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } else if (type === 'kaching') {
+          // Cash register ring
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(987.77, now); // B5
+          osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.6);
+        } else if (type === 'coin') {
+          // Cheerful coin clink
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(987.77, now);
+          osc.frequency.setValueAtTime(1318.51, now + 0.06);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.45);
+        } else if (type === 'success') {
+          // Success arpeggio (C - E - G - C)
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.1);
+            gain.gain.setValueAtTime(0.2, now + i * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.1);
+            osc.stop(now + i * 0.1 + 0.35);
+          });
+        } else if (type === 'retry') {
+          // Gentle warm reminder chime
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(392.00, now); // G4
+          osc.frequency.setValueAtTime(329.63, now + 0.15); // E4
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        } else if (type === 'step') {
+          // Soft footstep
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(110, now);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        }
+      } catch (e) {
+        console.warn('Audio play error:', e);
+      }
+    };
+
+    window.setAudioEnabled = function(enabled) {
+      isAudioEnabled = enabled;
+    };
+
+    // ==========================================
+    // 2. BRIDGE & UTILS
+    // ==========================================
     function sendToFlutter(data) {
       const jsonStr = JSON.stringify(data);
       if (window.FlutterBridge && window.FlutterBridge.postMessage) {
@@ -118,7 +250,6 @@
       } else if (window.parent && window.parent.postMessage) {
         window.parent.postMessage(jsonStr, '*');
       }
-      console.log('[To Flutter]', data);
     }
 
     function showToast(text, durationMs = 2500) {
@@ -133,18 +264,19 @@
       }, durationMs);
     }
 
-    // --- Scene Setup ---
+    // ==========================================
+    // 3. THREE.JS SCENE, CAMERA, & LIGHTING
+    // ==========================================
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xd7edf7); // Soft sky blue outside
+    scene.background = new THREE.Color(0xd7edf7);
     scene.fog = new THREE.FogExp2(0xd7edf7, 0.025);
 
-    // Camera (PRD: eye height 1.2m, FOV 70 deg)
+    // Eye height 1.2m, FOV 70 deg per PRD
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
-    // Start position: behind cashier desk (X=2.2, Z=4.2, Y=1.2), looking inward into the shop
     camera.position.set(2.0, 1.2, 4.2);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -152,11 +284,11 @@
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
-    // --- Lighting (PRD Bab 13: 1 main sun light + 1 ambient light) ---
-    const ambientLight = new THREE.AmbientLight(0xfff7ed, 0.85); // Warm ambient light
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xfff8ee, 0.9);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffaed, 1.1); // Warm sunlight from front door & windows
+    const sunLight = new THREE.DirectionalLight(0xfffaec, 1.15);
     sunLight.position.set(2, 6, 8);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
@@ -170,23 +302,24 @@
     sunLight.shadow.bias = -0.001;
     scene.add(sunLight);
 
-    // Secondary soft fill light for back of the shop
-    const fillLight = new THREE.PointLight(0xffeedd, 0.6, 12);
+    const fillLight = new THREE.PointLight(0xffeedd, 0.65, 12);
     fillLight.position.set(0, 2.8, -2);
     scene.add(fillLight);
 
-    // --- Textures & Canvas Helpers ---
+    // ==========================================
+    // 4. TEXTURE & SIGN GENERATORS
+    // ==========================================
     function createTileTexture() {
       const cv = document.createElement('canvas');
       cv.width = 256;
       cv.height = 256;
       const ctx = cv.getContext('2d');
-      ctx.fillStyle = '#eae6e0';
+      ctx.fillStyle = '#eae5df';
       ctx.fillRect(0, 0, 256, 256);
-      ctx.strokeStyle = '#d0cbc2';
+      ctx.strokeStyle = '#d2cbbf';
       ctx.lineWidth = 3;
       ctx.strokeRect(1, 1, 254, 254);
-      ctx.strokeStyle = '#dfdad1';
+      ctx.strokeStyle = '#e0dad0';
       ctx.lineWidth = 1;
       ctx.strokeRect(6, 6, 244, 244);
       const tex = new THREE.CanvasTexture(cv);
@@ -201,7 +334,6 @@
       cv.width = 512;
       cv.height = 128;
       const ctx = cv.getContext('2d');
-      // Background with rounded border
       ctx.fillStyle = colorHex;
       ctx.beginPath();
       ctx.roundRect(4, 4, 504, 120, 16);
@@ -210,78 +342,81 @@
       ctx.lineWidth = 6;
       ctx.stroke();
 
-      // Text
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 36px "Segoe UI", Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const fullText = (icon ? icon + '  ' : '') + text;
-      ctx.fillText(fullText, 256, 64);
-
-      const tex = new THREE.CanvasTexture(cv);
-      return tex;
+      ctx.fillText((icon ? icon + '  ' : '') + text, 256, 64);
+      return new THREE.CanvasTexture(cv);
     }
 
-    // --- Ruko Architecture (8m x 12m, H: 3.2m) ---
-    // Shop dimensions: X: [-4, 4], Z: [-6, 6], Y: [0, 3.2]
+    // ==========================================
+    // 5. RUKO ARCHITECTURE (8m x 12m, H: 3.2m)
+    // ==========================================
     const shopGroup = new THREE.Group();
     scene.add(shopGroup);
 
-    // 1. Floor
-    const floorGeo = new THREE.PlaneGeometry(8, 12);
-    const floorMat = new THREE.MeshStandardMaterial({
-      map: createTileTexture(),
-      roughness: 0.65,
-      metalness: 0.05
-    });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
+    // Floor
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(8, 12),
+      new THREE.MeshStandardMaterial({ map: createTileTexture(), roughness: 0.65, metalness: 0.05 })
+    );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(0, 0, 0);
     floor.receiveShadow = true;
     shopGroup.add(floor);
 
-    // 2. Ceiling
-    const ceilGeo = new THREE.PlaneGeometry(8, 12);
-    const ceilMat = new THREE.MeshStandardMaterial({ color: 0xfbf9f6, roughness: 0.9 });
-    const ceiling = new THREE.Mesh(ceilGeo, ceilMat);
+    // Ceiling with downlight fixtures
+    const ceiling = new THREE.Mesh(
+      new THREE.PlaneGeometry(8, 12),
+      new THREE.MeshStandardMaterial({ color: 0xfbf9f6, roughness: 0.9 })
+    );
     ceiling.rotation.x = Math.PI / 2;
-    ceiling.position.set(0, 3.2, 0);
+    ceiling.position.y = 3.2;
     shopGroup.add(ceiling);
 
-    // 3. Walls (Warm Cream / Krem Terang #F5EFEB)
+    // Downlights on ceiling
+    for (let z = -4; z <= 4; z += 4) {
+      for (let x = -2; x <= 2; x += 4) {
+        const fixture = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16),
+          new THREE.MeshBasicMaterial({ color: 0xfffaea })
+        );
+        fixture.position.set(x, 3.17, z);
+        shopGroup.add(fixture);
+      }
+    }
+
+    // Walls
     const wallMat = new THREE.MeshStandardMaterial({ color: 0xf4eee4, roughness: 0.85 });
     const wallTrimMat = new THREE.MeshStandardMaterial({ color: 0xd6cdbe, roughness: 0.7 });
 
-    // Back wall (Z = -6)
     const backWall = new THREE.Mesh(new THREE.BoxGeometry(8, 3.2, 0.2), wallMat);
     backWall.position.set(0, 1.6, -6.1);
     backWall.receiveShadow = true;
     shopGroup.add(backWall);
 
-    // Left wall (X = -4)
     const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.2, 12), wallMat);
     leftWall.position.set(-4.1, 1.6, 0);
     leftWall.receiveShadow = true;
     shopGroup.add(leftWall);
 
-    // Right wall (X = 4)
     const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.2, 12), wallMat);
     rightWall.position.set(4.1, 1.6, 0);
     rightWall.receiveShadow = true;
     shopGroup.add(rightWall);
 
-    // Skirting boards / trims
-    const trimLeft = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.15, 12), wallTrimMat);
-    trimLeft.position.set(-3.96, 0.075, 0);
-    shopGroup.add(trimLeft);
-    const trimRight = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.15, 12), wallTrimMat);
-    trimRight.position.set(3.96, 0.075, 0);
-    shopGroup.add(trimRight);
-    const trimBack = new THREE.Mesh(new THREE.BoxGeometry(8, 0.15, 0.08), wallTrimMat);
-    trimBack.position.set(0, 0.075, -5.96);
-    shopGroup.add(trimBack);
+    // Baseboard trims
+    const trimL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.15, 12), wallTrimMat);
+    trimL.position.set(-3.96, 0.075, 0);
+    shopGroup.add(trimL);
+    const trimR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.15, 12), wallTrimMat);
+    trimR.position.set(3.96, 0.075, 0);
+    shopGroup.add(trimR);
+    const trimB = new THREE.Mesh(new THREE.BoxGeometry(8, 0.15, 0.08), wallTrimMat);
+    trimB.position.set(0, 0.075, -5.96);
+    shopGroup.add(trimB);
 
-    // Mini Gudang Decorative Door on right wall (X=3.95, Z=0.5)
+    // Mini Gudang Door
     const gudangDoor = new THREE.Mesh(
       new THREE.BoxGeometry(0.05, 2.2, 1.1),
       new THREE.MeshStandardMaterial({ color: 0x8a5a36, roughness: 0.6 })
@@ -296,23 +431,20 @@
     gudangSign.position.set(3.95, 2.3, 0.5);
     shopGroup.add(gudangSign);
 
-    // Front Wall (Z = 6) with Glass Doors & Windows
-    // Left front wall solid section
+    // Front Wall with Entrance & Glass Doors
     const frontWallLeft = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.2, 0.2), wallMat);
     frontWallLeft.position.set(-2.75, 1.6, 6.1);
     shopGroup.add(frontWallLeft);
 
-    // Right front wall solid section
     const frontWallRight = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.2, 0.2), wallMat);
     frontWallRight.position.set(2.75, 1.6, 6.1);
     shopGroup.add(frontWallRight);
 
-    // Top beam over entrance
     const frontBeam = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.8, 0.2), wallMat);
     frontBeam.position.set(0, 2.8, 6.1);
     shopGroup.add(frontBeam);
 
-    // Sliding Glass Doors (X: -1.5 to 1.5, Z = 6.0)
+    // Sliding Glass Doors
     const glassMat = new THREE.MeshPhysicalMaterial({
       color: 0xebf8ff,
       transparent: true,
@@ -323,75 +455,79 @@
     });
     const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.8, roughness: 0.3 });
 
-    // Left sliding glass door
     const doorLeft = new THREE.Group();
     const glassPanelL = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.35, 0.05), glassMat);
     glassPanelL.position.set(0, 1.175, 0);
     doorLeft.add(glassPanelL);
-    const frameL = new THREE.Mesh(new THREE.BoxGeometry(1.44, 2.4, 0.07), doorFrameMat);
-    frameL.position.set(0, 1.175, 0);
-    frameL.scale.set(0.98, 0.98, 0.8);
-    doorLeft.add(frameL);
     doorLeft.position.set(-0.7, 0, 6.0);
     shopGroup.add(doorLeft);
 
-    // Right sliding glass door
     const doorRight = new THREE.Group();
     const glassPanelR = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.35, 0.05), glassMat);
     glassPanelR.position.set(0, 1.175, 0);
     doorRight.add(glassPanelR);
-    const frameR = new THREE.Mesh(new THREE.BoxGeometry(1.44, 2.4, 0.07), doorFrameMat);
-    frameR.position.set(0, 1.175, 0);
-    frameR.scale.set(0.98, 0.98, 0.8);
-    doorRight.add(frameR);
     doorRight.position.set(0.7, 0, 6.0);
     shopGroup.add(doorRight);
 
-    // Outside sidewalk & road
-    const sidewalkGeo = new THREE.PlaneGeometry(16, 4);
-    const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xbfb8ab, roughness: 0.9 });
-    const sidewalk = new THREE.Mesh(sidewalkGeo, sidewalkMat);
+    // Outside Street, Sidewalk & Trees
+    const sidewalk = new THREE.Mesh(
+      new THREE.PlaneGeometry(16, 4),
+      new THREE.MeshStandardMaterial({ color: 0xbfb8ab, roughness: 0.9 })
+    );
     sidewalk.rotation.x = -Math.PI / 2;
     sidewalk.position.set(0, -0.01, 8.0);
     scene.add(sidewalk);
 
-    const roadGeo = new THREE.PlaneGeometry(24, 8);
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0x3d4348, roughness: 0.95 });
-    const road = new THREE.Mesh(roadGeo, roadMat);
+    const road = new THREE.Mesh(
+      new THREE.PlaneGeometry(24, 8),
+      new THREE.MeshStandardMaterial({ color: 0x3d4348, roughness: 0.95 })
+    );
     road.rotation.x = -Math.PI / 2;
     road.position.set(0, -0.05, 14.0);
     scene.add(road);
 
-    // Decorative Tree outside (PRD: 1 pohon sederhana di luar)
-    const treeGroup = new THREE.Group();
-    const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.2, 0.25, 2.4, 8),
-      new THREE.MeshStandardMaterial({ color: 0x6e4a2c, roughness: 0.9 })
+    // Road dashed line
+    const roadLine = new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 0.2),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
     );
-    trunk.position.y = 1.2;
-    trunk.castShadow = true;
-    treeGroup.add(trunk);
-    const foliage = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(1.3, 1),
-      new THREE.MeshStandardMaterial({ color: 0x438945, roughness: 0.75, flatShading: true })
-    );
-    foliage.position.y = 2.8;
-    foliage.castShadow = true;
-    treeGroup.add(foliage);
-    treeGroup.position.set(-3.5, 0, 8.5);
-    scene.add(treeGroup);
+    roadLine.rotation.x = -Math.PI / 2;
+    roadLine.position.set(0, -0.04, 14.0);
+    scene.add(roadLine);
 
-    // --- Shop Signboard over Entrance ---
-    const shopSignTex = createSignTexture('TOKO CERDAS', '#16a085', '🏪');
+    // Trees outside
+    function createTree(x, z) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.25, 2.4, 8),
+        new THREE.MeshStandardMaterial({ color: 0x6e4a2c, roughness: 0.9 })
+      );
+      trunk.position.y = 1.2;
+      trunk.castShadow = true;
+      tree.add(trunk);
+
+      const foliage = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(1.3, 1),
+        new THREE.MeshStandardMaterial({ color: 0x438945, roughness: 0.75, flatShading: true })
+      );
+      foliage.position.y = 2.8;
+      foliage.castShadow = true;
+      tree.add(foliage);
+      tree.position.set(x, 0, z);
+      scene.add(tree);
+    }
+    createTree(-3.8, 8.5);
+    createTree(4.2, 8.8);
+
+    // Shop Signboard
     const shopSign = new THREE.Mesh(
       new THREE.BoxGeometry(2.8, 0.6, 0.08),
-      new THREE.MeshStandardMaterial({ map: shopSignTex, roughness: 0.4 })
+      new THREE.MeshStandardMaterial({ map: createSignTexture('TOKO CERDAS', '#16a085', '🏪'), roughness: 0.4 })
     );
     shopSign.position.set(0, 2.7, 5.95);
     shopGroup.add(shopSign);
 
-    // --- Cashier Desk & Display Glass Case ---
-    // Cashier Desk (X: 1.2 to 2.8, Z: 3.2 to 4.8)
+    // Cashier Desk
     const deskGroup = new THREE.Group();
     const deskTop = new THREE.Mesh(
       new THREE.BoxGeometry(1.6, 0.1, 1.4),
@@ -411,69 +547,63 @@
     deskBody.receiveShadow = true;
     deskGroup.add(deskBody);
 
-    // Cash Register machine on desk
-    const registerBase = new THREE.Mesh(
+    // Cash register
+    const regBase = new THREE.Mesh(
       new THREE.BoxGeometry(0.4, 0.12, 0.4),
       new THREE.MeshStandardMaterial({ color: 0x34495e, roughness: 0.5 })
     );
-    registerBase.position.set(1.8, 1.05, 3.8);
-    registerBase.castShadow = true;
-    deskGroup.add(registerBase);
+    regBase.position.set(1.8, 1.05, 3.8);
+    deskGroup.add(regBase);
 
-    const registerScreen = new THREE.Mesh(
+    const regScreen = new THREE.Mesh(
       new THREE.BoxGeometry(0.3, 0.22, 0.05),
       new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.2, emissive: 0x114422 })
     );
-    registerScreen.rotation.y = -Math.PI / 4;
-    registerScreen.position.set(1.8, 1.2, 3.7);
-    deskGroup.add(registerScreen);
+    regScreen.rotation.y = -Math.PI / 4;
+    regScreen.position.set(1.8, 1.2, 3.7);
+    deskGroup.add(regScreen);
     shopGroup.add(deskGroup);
 
-    // Glass Etalase Counter (X: -2.0 to -3.4, Z: 3.5 to 4.5)
-    const etalaseGroup = new THREE.Group();
+    // Glass Etalase Counter
     const etalaseFrame = new THREE.Mesh(
       new THREE.BoxGeometry(1.4, 1.0, 1.0),
       new THREE.MeshStandardMaterial({ color: 0xbdc3c7, metalness: 0.7, roughness: 0.3 })
     );
     etalaseFrame.position.set(-2.5, 0.5, 3.8);
-    etalaseGroup.add(etalaseFrame);
-    const etalaseGlass = new THREE.Mesh(
-      new THREE.BoxGeometry(1.36, 0.96, 0.96),
-      glassMat
-    );
-    etalaseGlass.position.set(-2.5, 0.5, 3.8);
-    etalaseGroup.add(etalaseGlass);
-    shopGroup.add(etalaseGroup);
+    shopGroup.add(etalaseFrame);
 
-    // --- Interactive Objects Array & Collision Boxes ---
+    const etalaseGlass = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.96, 0.96), glassMat);
+    etalaseGlass.position.set(-2.5, 0.5, 3.8);
+    shopGroup.add(etalaseGlass);
+
+    // ==========================================
+    // 6. COLLISION & INTERACTABLE REGISTRIES
+    // ==========================================
     const interactables = [];
     const collisionBoxes = [];
+    let isFloorGuideVisible = true;
 
-    // Helper to register AABB collision box
     function addCollisionBox(minX, maxX, minZ, maxZ) {
       collisionBoxes.push({ minX, maxX, minZ, maxZ });
     }
 
-    // Register collisions for room boundaries (margin for camera radius 0.35m)
-    addCollisionBox(-5.0, -3.6, -7.0, 7.0); // Left wall
-    addCollisionBox(3.6, 5.0, -7.0, 7.0);   // Right wall
-    addCollisionBox(-5.0, 5.0, -7.0, -5.6); // Back wall
-    addCollisionBox(-5.0, 5.0, 5.7, 7.0);   // Front wall
-    // Register perabot collisions
-    addCollisionBox(1.1, 2.9, 3.0, 4.6);    // Cashier desk
-    addCollisionBox(-3.3, -1.7, 3.2, 4.4);  // Etalase
+    addCollisionBox(-5.0, -3.6, -7.0, 7.0);
+    addCollisionBox(3.6, 5.0, -7.0, 7.0);
+    addCollisionBox(-5.0, 5.0, -7.0, -5.6);
+    addCollisionBox(-5.0, 5.0, 5.7, 7.0);
+    addCollisionBox(1.1, 2.9, 3.0, 4.6);
+    addCollisionBox(-3.3, -1.7, 3.2, 4.4);
 
-    // --- 5 Category Shelves (Rak) ---
-    // Shelf Builder Function
+    // ==========================================
+    // 7. SHELVES (5 RAK KATEGORI)
+    // ==========================================
     function createShelf(id, name, category, colorHex, icon, posX, posZ, rotY = 0) {
       const shelf = new THREE.Group();
       shelf.userData = { id, name, category, isShelf: true, posX, posZ };
 
-      // Wood frame / metal frame
       const frameMat = new THREE.MeshStandardMaterial({ color: 0x3d352e, roughness: 0.7 });
       const boardMat = new THREE.MeshStandardMaterial({ color: 0xe8dfd5, roughness: 0.5 });
 
-      // 4 Upright poles
       const w = 1.6, d = 0.65, h = 2.1;
       const poleGeo = new THREE.BoxGeometry(0.06, h, 0.06);
       [
@@ -488,9 +618,7 @@
         shelf.add(pole);
       });
 
-      // 4 Shelf levels
-      const levelHeights = [0.15, 0.65, 1.15, 1.65];
-      levelHeights.forEach(y => {
+      [0.15, 0.65, 1.15, 1.65].forEach(y => {
         const plank = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), boardMat);
         plank.position.set(0, y, 0);
         plank.castShadow = true;
@@ -498,7 +626,6 @@
         shelf.add(plank);
       });
 
-      // Back panel with slight color accent
       const backPanel = new THREE.Mesh(
         new THREE.BoxGeometry(w - 0.06, h - 0.2, 0.03),
         new THREE.MeshStandardMaterial({ color: 0xf5f0eb, roughness: 0.8 })
@@ -506,24 +633,21 @@
       backPanel.position.set(0, h/2, -d/2 + 0.02);
       shelf.add(backPanel);
 
-      // Category Signboard on top
-      const signTex = createSignTexture(name, colorHex, icon);
       const signMesh = new THREE.Mesh(
         new THREE.BoxGeometry(w, 0.35, 0.08),
-        new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.4 })
+        new THREE.MeshStandardMaterial({ map: createSignTexture(name, colorHex, icon), roughness: 0.4 })
       );
       signMesh.position.set(0, h + 0.2, 0);
       shelf.add(signMesh);
 
-      // Floor Guide Ring / Arrow (PRD Bab 8 & 21: Rak yang disorot)
-      const ringGeo = new THREE.RingGeometry(0.35, 0.55, 32);
+      // Floor marker ring
       const ringMat = new THREE.MeshBasicMaterial({
         color: new THREE.Color(colorHex),
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.75
       });
-      const floorMarker = new THREE.Mesh(ringGeo, ringMat);
+      const floorMarker = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.55, 32), ringMat);
       floorMarker.rotation.x = -Math.PI / 2;
       floorMarker.position.set(0, 0.02, d/2 + 0.6);
       shelf.add(floorMarker);
@@ -533,227 +657,410 @@
       shelf.rotation.y = rotY;
       shopGroup.add(shelf);
 
-      // Collision box for this shelf
-      const halfW = w / 2 + 0.2;
-      const halfD = d / 2 + 0.2;
-      addCollisionBox(posX - halfW, posX + halfW, posZ - halfD, posZ + halfD);
-
+      addCollisionBox(posX - w/2 - 0.2, posX + w/2 + 0.2, posZ - d/2 - 0.2, posZ + d/2 + 0.2);
+      interactables.push(shelf);
       return shelf;
     }
 
-    // 1. Rak Sembako Pokok (Hijau toska #16a085, X: -2.6, Z: 1.0)
     const shelfSembako = createShelf('rak_sembako', 'SEMBAKO POKOK', 'Sembako Pokok', '#16a085', '🌾', -2.6, 1.0, Math.PI / 2);
-
-    // 2. Rak Makanan Kering (Oranye #e67e22, X: -2.6, Z: -2.2)
     const shelfMakanan = createShelf('rak_makanan', 'MAKANAN KERING', 'Makanan Kering', '#e67e22', '🍜', -2.6, -2.2, Math.PI / 2);
-
-    // 3. Rak Minuman (Biru #3498db, X: -2.6, Z: -5.0)
     const shelfMinuman = createShelf('rak_minuman', 'MINUMAN DINGIN', 'Minuman', '#3498db', '🥛', -2.6, -5.0, Math.PI / 2);
-
-    // 4. Rak Bumbu Dapur (Ungu #9b59b6, X: 2.4, Z: -5.0)
     const shelfBumbu = createShelf('rak_bumbu', 'BUMBU DAPUR', 'Bumbu Dapur', '#9b59b6', '🧂', 2.4, -5.0, -Math.PI / 2);
-
-    // 5. Rak Kebutuhan Rumah (Pink #e91e63, X: 2.4, Z: -2.2)
     const shelfRumah = createShelf('rak_rumah', 'KEBUTUHAN RUMAH', 'Kebutuhan Rumah', '#e91e63', '🧼', 2.4, -2.2, -Math.PI / 2);
 
-    // Register all shelves for Tap-and-Walk targeting
-    [shelfSembako, shelfMakanan, shelfMinuman, shelfBumbu, shelfRumah].forEach(s => {
-      interactables.push(s);
-    });
+    window.setFloorGuide = function(visible) {
+      isFloorGuideVisible = visible;
+      [shelfSembako, shelfMakanan, shelfMinuman, shelfBumbu, shelfRumah].forEach(s => {
+        if (s.userData.floorMarker) {
+          s.userData.floorMarker.visible = visible;
+        }
+      });
+    };
 
-    // --- 3D Item Models on Sembako Shelf (PRD Bab 7 & 21) ---
-    // Products on Rak Sembako Pokok: Beras, Minyak Goreng, Telur Ayam
-
-    // Helper for interactive product wrapper
-    function makeInteractableProduct(mesh, productData) {
+    // ==========================================
+    // 8. ALL 18 LOW-POLY MODELS (PRD BAB 7 & 13)
+    // ==========================================
+    function registerProduct(mesh, productData, parentShelf) {
       mesh.userData = { ...productData, isProduct: true };
+      mesh.traverse(child => {
+        if (child.isMesh) {
+          child.userData = mesh.userData;
+        }
+      });
       interactables.push(mesh);
+      parentShelf.add(mesh);
       return mesh;
     }
 
-    // A. Model Beras 1 kg (Karung krem bertali)
-    const berasGroup = new THREE.Group();
-    const sackGeo = new THREE.CylinderGeometry(0.14, 0.16, 0.34, 12);
-    const sackMat = new THREE.MeshStandardMaterial({ color: 0xeee1c5, roughness: 0.9 });
-    const sack = new THREE.Mesh(sackGeo, sackMat);
-    sack.castShadow = true;
-    berasGroup.add(sack);
-    // Tie at top
-    const tie = new THREE.Mesh(
-      new THREE.TorusGeometry(0.10, 0.02, 8, 16),
-      new THREE.MeshStandardMaterial({ color: 0xb58849, roughness: 0.8 })
-    );
-    tie.rotation.x = Math.PI / 2;
-    tie.position.y = 0.14;
-    berasGroup.add(tie);
-    // Label on sack
-    const sackLabel = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.12, 0.16),
-      new THREE.MeshBasicMaterial({ color: 0x16a085 })
-    );
-    sackLabel.position.set(0, 0, 0.165);
-    berasGroup.add(sackLabel);
+    // --- RAK 1: SEMBAKO POKOK ---
+    // 1. Beras 1 kg
+    function buildBeras() {
+      const g = new THREE.Group();
+      const sack = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.13, 0.15, 0.32, 10),
+        new THREE.MeshStandardMaterial({ color: 0xeee1c5, roughness: 0.9 })
+      );
+      sack.castShadow = true;
+      g.add(sack);
+      const tie = new THREE.Mesh(
+        new THREE.TorusGeometry(0.09, 0.02, 6, 12),
+        new THREE.MeshStandardMaterial({ color: 0xb58849, roughness: 0.8 })
+      );
+      tie.rotation.x = Math.PI / 2;
+      tie.position.y = 0.13;
+      g.add(tie);
+      return g;
+    }
+    const berasMesh = buildBeras();
+    berasMesh.position.set(-0.45, 1.15 + 0.16, 0);
+    registerProduct(berasMesh, { id: 'beras_1kg', name: 'Beras', category: 'Sembako Pokok', unitLabel: '1 kg', priceIdr: 12000 }, shelfSembako);
 
-    berasGroup.position.set(-0.35, 1.15 + 0.17, 0);
-    makeInteractableProduct(berasGroup, {
-      id: 'beras_1kg',
-      name: 'Beras',
-      category: 'Sembako Pokok',
-      unitLabel: '1 kg',
-      priceIdr: 12000,
-      colorHex: '#16a085'
-    });
-    shelfSembako.add(berasGroup);
+    // 2. Minyak Goreng 1 liter
+    function buildMinyak() {
+      const g = new THREE.Group();
+      const bottle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.07, 0.07, 0.26, 10),
+        new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.25, transparent: true, opacity: 0.9 })
+      );
+      bottle.castShadow = true;
+      g.add(bottle);
+      const cap = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.035, 0.035, 0.06, 8),
+        new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.4 })
+      );
+      cap.position.y = 0.17;
+      g.add(cap);
+      return g;
+    }
+    const minyakMesh = buildMinyak();
+    minyakMesh.position.set(-0.15, 1.15 + 0.13, 0);
+    registerProduct(minyakMesh, { id: 'minyak_1l', name: 'Minyak Goreng', category: 'Sembako Pokok', unitLabel: '1 liter', priceIdr: 18000 }, shelfSembako);
 
-    // Duplicate stack of rice for full shelf look
-    const beras2 = berasGroup.clone();
-    beras2.position.set(-0.35, 0.65 + 0.17, 0);
-    makeInteractableProduct(beras2, berasGroup.userData);
-    shelfSembako.add(beras2);
-
-    // B. Model Minyak Goreng 1 liter (Botol kuning transparan dengan tutup merah)
-    const minyakGroup = new THREE.Group();
-    const bottleBody = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.08, 0.28, 12),
-      new THREE.MeshStandardMaterial({
-        color: 0xf1c40f,
-        roughness: 0.25,
-        metalness: 0.1,
-        transparent: true,
-        opacity: 0.88
-      })
-    );
-    bottleBody.castShadow = true;
-    minyakGroup.add(bottleBody);
-    const bottleNeck = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.035, 0.06, 0.08, 12),
-      new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.3 })
-    );
-    bottleNeck.position.y = 0.18;
-    minyakGroup.add(bottleNeck);
-    const bottleCap = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.04, 0.04, 0.05, 12),
-      new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.4 })
-    );
-    bottleCap.position.y = 0.23;
-    minyakGroup.add(bottleCap);
-
-    minyakGroup.position.set(0.0, 1.15 + 0.14, 0);
-    makeInteractableProduct(minyakGroup, {
-      id: 'minyak_1l',
-      name: 'Minyak Goreng',
-      category: 'Sembako Pokok',
-      unitLabel: '1 liter',
-      priceIdr: 18000,
-      colorHex: '#f39c12'
-    });
-    shelfSembako.add(minyakGroup);
-
-    // Another bottle on shelf
-    const minyak2 = minyakGroup.clone();
-    minyak2.position.set(0.0, 0.65 + 0.14, 0);
-    makeInteractableProduct(minyak2, minyakGroup.userData);
-    shelfSembako.add(minyak2);
-
-    // C. Model Telur Ayam 1 pak isi 6 (Karton telur cokelat + butir telur)
-    const telurGroup = new THREE.Group();
-    const eggCarton = new THREE.Mesh(
-      new THREE.BoxGeometry(0.26, 0.08, 0.18),
-      new THREE.MeshStandardMaterial({ color: 0xa07855, roughness: 0.9 })
-    );
-    eggCarton.castShadow = true;
-    telurGroup.add(eggCarton);
-    // 6 Eggs
-    const eggGeo = new THREE.SphereGeometry(0.035, 8, 8);
-    eggGeo.scale(1, 1.3, 1);
-    const eggMat = new THREE.MeshStandardMaterial({ color: 0xf4d3af, roughness: 0.6 });
-    for (let r = 0; r < 2; r++) {
-      for (let c = 0; c < 3; c++) {
-        const egg = new THREE.Mesh(eggGeo, eggMat);
-        egg.position.set(-0.07 + c * 0.07, 0.05, -0.04 + r * 0.08);
-        telurGroup.add(egg);
+    // 3. Telur Ayam 1 pak
+    function buildTelur() {
+      const g = new THREE.Group();
+      const carton = new THREE.Mesh(
+        new THREE.BoxGeometry(0.24, 0.07, 0.16),
+        new THREE.MeshStandardMaterial({ color: 0xa07855, roughness: 0.9 })
+      );
+      carton.castShadow = true;
+      g.add(carton);
+      const eggGeo = new THREE.SphereGeometry(0.03, 6, 6);
+      eggGeo.scale(1, 1.25, 1);
+      const eggMat = new THREE.MeshStandardMaterial({ color: 0xf4d3af, roughness: 0.6 });
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 3; c++) {
+          const egg = new THREE.Mesh(eggGeo, eggMat);
+          egg.position.set(-0.06 + c * 0.06, 0.045, -0.035 + r * 0.07);
+          g.add(egg);
+        }
       }
+      return g;
     }
-    telurGroup.position.set(0.35, 1.15 + 0.04, 0);
-    makeInteractableProduct(telurGroup, {
-      id: 'telur_1pak',
-      name: 'Telur Ayam',
-      category: 'Sembako Pokok',
-      unitLabel: '1 pak isi 6',
-      priceIdr: 15000,
-      colorHex: '#d35400'
-    });
-    shelfSembako.add(telurGroup);
+    const telurMesh = buildTelur();
+    telurMesh.position.set(0.15, 1.15 + 0.035, 0);
+    registerProduct(telurMesh, { id: 'telur_1pak', name: 'Telur Ayam', category: 'Sembako Pokok', unitLabel: '1 pak isi 6', priceIdr: 15000 }, shelfSembako);
 
-    // Fill other shelves with decorative low-poly sembako goods
-    // Makanan kering: Indomie box, Biskuit kaleng
-    for (let i = -1; i <= 1; i++) {
-      const mieBox = new THREE.Mesh(
-        new THREE.BoxGeometry(0.18, 0.12, 0.14),
-        new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.7 })
+    // 4. Gula Pasir 1 kg
+    function buildGula() {
+      const g = new THREE.Group();
+      const bag = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 0.22, 0.10),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 })
       );
-      mieBox.position.set(i * 0.35, 1.15 + 0.06, 0);
-      shelfMakanan.add(mieBox);
-    }
-    // Minuman: Botol aqua & kotak susu
-    for (let i = -1; i <= 1; i++) {
-      const susuBox = new THREE.Mesh(
-        new THREE.BoxGeometry(0.12, 0.22, 0.10),
-        new THREE.MeshStandardMaterial({ color: 0x3498db, roughness: 0.5 })
+      bag.castShadow = true;
+      g.add(bag);
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(0.152, 0.06, 0.102),
+        new THREE.MeshBasicMaterial({ color: 0x3498db })
       );
-      susuBox.position.set(i * 0.35, 1.15 + 0.11, 0);
-      shelfMinuman.add(susuBox);
+      g.add(stripe);
+      return g;
     }
-    // Bumbu: Botol kecap & garam
-    for (let i = -1; i <= 1; i++) {
-      const kecapBotol = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05, 0.06, 0.24, 8),
-        new THREE.MeshStandardMaterial({ color: 0x8e44ad, roughness: 0.5 })
-      );
-      kecapBotol.position.set(i * 0.35, 1.15 + 0.12, 0);
-      shelfBumbu.add(kecapBotol);
-    }
-    // Kebutuhan rumah: Sabun & deterjen
-    for (let i = -1; i <= 1; i++) {
-      const sabunBox = new THREE.Mesh(
-        new THREE.BoxGeometry(0.16, 0.10, 0.14),
-        new THREE.MeshStandardMaterial({ color: 0xe91e63, roughness: 0.6 })
-      );
-      sabunBox.position.set(i * 0.35, 1.15 + 0.05, 0);
-      shelfRumah.add(sabunBox);
-    }
+    const gulaMesh = buildGula();
+    gulaMesh.position.set(0.45, 1.15 + 0.11, 0);
+    registerProduct(gulaMesh, { id: 'gula_1kg', name: 'Gula Pasir', category: 'Sembako Pokok', unitLabel: '1 kg', priceIdr: 14000 }, shelfSembako);
 
-    // --- Low-Poly Customer Character (PRD Bab 9: Bu Sari) ---
+    // 5. Tepung Terigu 1 kg
+    function buildTerigu() {
+      const g = new THREE.Group();
+      const bag = new THREE.Mesh(
+        new THREE.BoxGeometry(0.16, 0.24, 0.11),
+        new THREE.MeshStandardMaterial({ color: 0xfbf8e6, roughness: 0.6 })
+      );
+      bag.castShadow = true;
+      g.add(bag);
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(0.162, 0.06, 0.112),
+        new THREE.MeshBasicMaterial({ color: 0xe67e22 })
+      );
+      g.add(stripe);
+      return g;
+    }
+    const teriguMesh = buildTerigu();
+    teriguMesh.position.set(-0.25, 0.65 + 0.12, 0);
+    registerProduct(teriguMesh, { id: 'terigu_1kg', name: 'Tepung Terigu', category: 'Sembako Pokok', unitLabel: '1 kg', priceIdr: 11000 }, shelfSembako);
+
+    // --- RAK 2: MAKANAN KERING ---
+    // 6. Mie Instan
+    function buildMie() {
+      const g = new THREE.Group();
+      const p = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.11, 0.14),
+        new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.5 })
+      );
+      p.castShadow = true;
+      g.add(p);
+      return g;
+    }
+    const mieMesh = buildMie();
+    mieMesh.position.set(-0.35, 1.15 + 0.055, 0);
+    registerProduct(mieMesh, { id: 'mie_instan', name: 'Mie Instan', category: 'Makanan Kering', unitLabel: '1 bungkus', priceIdr: 3000 }, shelfMakanan);
+
+    // 7. Biskuit
+    function buildBiskuit() {
+      const g = new THREE.Group();
+      const tin = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.10, 0.10, 0.18, 12),
+        new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.4, metalness: 0.2 })
+      );
+      tin.castShadow = true;
+      g.add(tin);
+      return g;
+    }
+    const biskuitMesh = buildBiskuit();
+    biskuitMesh.position.set(0.05, 1.15 + 0.09, 0);
+    registerProduct(biskuitMesh, { id: 'biskuit_pak', name: 'Biskuit', category: 'Makanan Kering', unitLabel: '1 pak', priceIdr: 8000 }, shelfMakanan);
+
+    // 8. Roti Tawar
+    function buildRoti() {
+      const g = new THREE.Group();
+      const loaf = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 0.14, 0.24),
+        new THREE.MeshStandardMaterial({ color: 0xf5eedb, roughness: 0.8 })
+      );
+      loaf.castShadow = true;
+      g.add(loaf);
+      const tag = new THREE.Mesh(
+        new THREE.BoxGeometry(0.04, 0.04, 0.04),
+        new THREE.MeshBasicMaterial({ color: 0x27ae60 })
+      );
+      tag.position.set(0, 0.08, 0.11);
+      g.add(tag);
+      return g;
+    }
+    const rotiMesh = buildRoti();
+    rotiMesh.position.set(0.40, 1.15 + 0.07, 0);
+    registerProduct(rotiMesh, { id: 'roti_tawar', name: 'Roti Tawar', category: 'Makanan Kering', unitLabel: '1 bungkus', priceIdr: 13000 }, shelfMakanan);
+
+    // --- RAK 3: MINUMAN DINGIN ---
+    // 9. Susu UHT
+    function buildSusu() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.11, 0.20, 0.09),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      const blueTop = new THREE.Mesh(
+        new THREE.BoxGeometry(0.112, 0.04, 0.092),
+        new THREE.MeshBasicMaterial({ color: 0x2980b9 })
+      );
+      blueTop.position.y = 0.08;
+      g.add(blueTop);
+      return g;
+    }
+    const susuMesh = buildSusu();
+    susuMesh.position.set(-0.45, 1.15 + 0.10, 0);
+    registerProduct(susuMesh, { id: 'susu_uht', name: 'Susu UHT', category: 'Minuman', unitLabel: '1 kotak', priceIdr: 6000 }, shelfMinuman);
+
+    // 10. Teh Celup
+    function buildTeh() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.12, 0.10),
+        new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      return g;
+    }
+    const tehMesh = buildTeh();
+    tehMesh.position.set(-0.15, 1.15 + 0.06, 0);
+    registerProduct(tehMesh, { id: 'teh_celup', name: 'Teh Celup', category: 'Minuman', unitLabel: '1 kotak', priceIdr: 7000 }, shelfMinuman);
+
+    // 11. Kopi Sachet
+    function buildKopi() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.18, 0.12),
+        new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.7 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      return g;
+    }
+    const kopiMesh = buildKopi();
+    kopiMesh.position.set(0.15, 1.15 + 0.09, 0);
+    registerProduct(kopiMesh, { id: 'kopi_sachet', name: 'Kopi Sachet', category: 'Minuman', unitLabel: '1 pak', priceIdr: 10000 }, shelfMinuman);
+
+    // 12. Air Mineral
+    function buildAir() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 0.22, 10),
+        new THREE.MeshStandardMaterial({ color: 0x74b9ff, roughness: 0.2, transparent: true, opacity: 0.85 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      const cap = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 0.04, 8),
+        new THREE.MeshStandardMaterial({ color: 0x0984e3 })
+      );
+      cap.position.y = 0.13;
+      g.add(cap);
+      return g;
+    }
+    const airMesh = buildAir();
+    airMesh.position.set(0.45, 1.15 + 0.11, 0);
+    registerProduct(airMesh, { id: 'air_mineral', name: 'Air Mineral', category: 'Minuman', unitLabel: '1 botol', priceIdr: 4000 }, shelfMinuman);
+
+    // --- RAK 4: BUMBU DAPUR ---
+    // 13. Garam
+    function buildGaram() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.16, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0xecf0f1, roughness: 0.4 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      return g;
+    }
+    const garamMesh = buildGaram();
+    garamMesh.position.set(-0.35, 1.15 + 0.08, 0);
+    registerProduct(garamMesh, { id: 'garam_dapur', name: 'Garam Dapur', category: 'Bumbu Dapur', unitLabel: '1 bungkus', priceIdr: 2000 }, shelfBumbu);
+
+    // 14. Kecap Manis
+    function buildKecap() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.06, 0.24, 10),
+        new THREE.MeshStandardMaterial({ color: 0x1e272e, roughness: 0.3 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      const cap = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.03, 0.06, 8),
+        new THREE.MeshStandardMaterial({ color: 0xf39c12 })
+      );
+      cap.position.y = 0.14;
+      g.add(cap);
+      return g;
+    }
+    const kecapMesh = buildKecap();
+    kecapMesh.position.set(0.05, 1.15 + 0.12, 0);
+    registerProduct(kecapMesh, { id: 'kecap_manis', name: 'Kecap Manis', category: 'Bumbu Dapur', unitLabel: '1 botol', priceIdr: 9000 }, shelfBumbu);
+
+    // 15. Saus Sambal
+    function buildSaus() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.06, 0.24, 10),
+        new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.3 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      const cap = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.03, 0.06, 8),
+        new THREE.MeshStandardMaterial({ color: 0xf1c40f })
+      );
+      cap.position.y = 0.14;
+      g.add(cap);
+      return g;
+    }
+    const sausMesh = buildSaus();
+    sausMesh.position.set(0.40, 1.15 + 0.12, 0);
+    registerProduct(sausMesh, { id: 'saus_sambal', name: 'Saus Sambal', category: 'Bumbu Dapur', unitLabel: '1 botol', priceIdr: 8000 }, shelfBumbu);
+
+    // --- RAK 5: KEBUTUHAN RUMAH ---
+    // 16. Sabun Mandi
+    function buildSabun() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.08, 0.09),
+        new THREE.MeshStandardMaterial({ color: 0x55efc4, roughness: 0.5 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      return g;
+    }
+    const sabunMesh = buildSabun();
+    sabunMesh.position.set(-0.35, 1.15 + 0.04, 0);
+    registerProduct(sabunMesh, { id: 'sabun_mandi', name: 'Sabun Mandi', category: 'Kebutuhan Rumah', unitLabel: '1 batang', priceIdr: 5000 }, shelfRumah);
+
+    // 17. Pasta Gigi
+    function buildPastaGigi() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.22, 0.07, 0.07),
+        new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.4 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      return g;
+    }
+    const pastaMesh = buildPastaGigi();
+    pastaMesh.position.set(0.05, 1.15 + 0.035, 0);
+    registerProduct(pastaMesh, { id: 'pasta_gigi', name: 'Pasta Gigi', category: 'Kebutuhan Rumah', unitLabel: '1 tube', priceIdr: 9000 }, shelfRumah);
+
+    // 18. Deterjen
+    function buildDeterjen() {
+      const g = new THREE.Group();
+      const b = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.24, 0.12),
+        new THREE.MeshStandardMaterial({ color: 0xe84393, roughness: 0.6 })
+      );
+      b.castShadow = true;
+      g.add(b);
+      return g;
+    }
+    const deterjenMesh = buildDeterjen();
+    deterjenMesh.position.set(0.40, 1.15 + 0.12, 0);
+    registerProduct(deterjenMesh, { id: 'deterjen', name: 'Deterjen', category: 'Kebutuhan Rumah', unitLabel: '1 bungkus', priceIdr: 12000 }, shelfRumah);
+
+    // ==========================================
+    // 9. 12 CUSTOMER VARIATIONS & ANIMATED ACTOR
+    // ==========================================
     const customer = new THREE.Group();
     customer.userData = {
       state: 'SPAWN',
       name: 'Bu Sari',
-      speech: 'Halo, saya mau beli Beras 1 kg dan Minyak Goreng ya!'
+      appearanceId: 'customer_1'
     };
 
-    // Body parts for walking animation
+    // Body parts
     const skinMat = new THREE.MeshStandardMaterial({ color: 0xdfa684, roughness: 0.8 });
-    const clothesMat = new THREE.MeshStandardMaterial({ color: 0x1abc9c, roughness: 0.7 }); // Toska dress
-    const hijabMat = new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.8 });   // Orange hijab
-    const pantsMat = new THREE.MeshStandardMaterial({ color: 0x34495e, roughness: 0.8 });   // Dark skirt/pants
+    const clothesMat = new THREE.MeshStandardMaterial({ color: 0x1abc9c, roughness: 0.7 });
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.8 });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: 0x34495e, roughness: 0.8 });
     const shoeMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.5 });
 
-    // Torso
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.55, 0.26), clothesMat);
     torso.position.y = 0.95;
     torso.castShadow = true;
     customer.add(torso);
 
-    // Head
     const head = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.28, 0.26), skinMat);
     head.position.y = 1.38;
     head.castShadow = true;
     customer.add(head);
 
-    // Hijab/Kerudung
-    const hijab = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.36, 0.32), hijabMat);
-    hijab.position.set(0, 1.40, -0.02);
-    customer.add(hijab);
+    // Hair or Hijab mesh
+    const headCover = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.36, 0.32), hairMat);
+    headCover.position.set(0, 1.40, -0.02);
+    customer.add(headCover);
 
     // Arms
     const leftArmGroup = new THREE.Group();
@@ -772,6 +1079,15 @@
     rightArmGroup.add(rightArm);
     customer.add(rightArmGroup);
 
+    // Shopping Bag carried when leaving
+    const shoppingBag = new THREE.Mesh(
+      new THREE.BoxGeometry(0.25, 0.30, 0.18),
+      new THREE.MeshStandardMaterial({ color: 0xecf0f1, roughness: 0.5 })
+    );
+    shoppingBag.position.set(0, -0.38, 0.08);
+    shoppingBag.visible = false;
+    rightArmGroup.add(shoppingBag);
+
     // Legs
     const leftLegGroup = new THREE.Group();
     leftLegGroup.position.set(-0.13, 0.65, 0);
@@ -779,9 +1095,6 @@
     leftLeg.position.y = -0.27;
     leftLeg.castShadow = true;
     leftLegGroup.add(leftLeg);
-    const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.10, 0.22), shoeMat);
-    leftShoe.position.set(0, -0.56, 0.03);
-    leftLegGroup.add(leftShoe);
     customer.add(leftLegGroup);
 
     const rightLegGroup = new THREE.Group();
@@ -790,67 +1103,122 @@
     rightLeg.position.y = -0.27;
     rightLeg.castShadow = true;
     rightLegGroup.add(rightLeg);
-    const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.10, 0.22), shoeMat);
-    rightShoe.position.set(0, -0.56, 0.03);
-    rightLegGroup.add(rightShoe);
     customer.add(rightLegGroup);
 
-    // Customer start on outside sidewalk
     customer.position.set(0.8, 0, 8.5);
-    customer.rotation.y = Math.PI; // Face inwards toward door
+    customer.rotation.y = Math.PI;
     scene.add(customer);
 
-    // Waypoints for Customer Path
-    // Waypoint 0: Sidewalk outside (0.8, 8.5)
-    // Waypoint 1: Front of glass door (0.8, 6.2)
-    // Waypoint 2: Inside door (0.8, 5.0)
-    // Waypoint 3: Waiting spot in front of cashier desk (0.8, 3.8)
-    const customerWaypoints = [
+    // 12 Appearance Themes (PRD Bab 9)
+    const appearances = [
+      { skin: 0xdfa684, clothes: 0x16a085, hair: 0xf39c12, pants: 0x2c3e50 }, // 1. Bu Sari
+      { skin: 0xc68642, clothes: 0x2980b9, hair: 0x2c3e50, pants: 0x7f8c8d }, // 2. Pak Budi
+      { skin: 0xf1c27d, clothes: 0xe74c3c, hair: 0x8e44ad, pants: 0x34495e }, // 3. Kak Rina
+      { skin: 0xe0ac69, clothes: 0x8e44ad, hair: 0x27ae60, pants: 0x2c3e50 }, // 4. Bu Dewi
+      { skin: 0xc68642, clothes: 0xd35400, hair: 0x111111, pants: 0x34495e }, // 5. Pak Joko
+      { skin: 0xdfa684, clothes: 0x27ae60, hair: 0x2c3e50, pants: 0x7f8c8d }, // 6. Kak Dimas
+      { skin: 0xf1c27d, clothes: 0xe91e63, hair: 0xf39c12, pants: 0x2c3e50 }, // 7. Bu Ani
+      { skin: 0xc68642, clothes: 0x34495e, hair: 0x555555, pants: 0x95a5a6 }, // 8. Pak Hendra
+      { skin: 0xdfa684, clothes: 0x00cec9, hair: 0x6c5ce7, pants: 0x2d3436 }, // 9. Kak Nia
+      { skin: 0xe0ac69, clothes: 0x6c5ce7, hair: 0x2d3436, pants: 0x636e72 }, // 10. Pak Wawan
+      { skin: 0xf1c27d, clothes: 0xfdcb6e, hair: 0xd63031, pants: 0x2d3436 }, // 11. Bu Endang
+      { skin: 0xc68642, clothes: 0x0984e3, hair: 0x2d3436, pants: 0x74b9ff }  // 12. Kak Ilham
+    ];
+
+    function applyCustomerAppearance(index) {
+      const theme = appearances[index % appearances.length];
+      skinMat.color.setHex(theme.skin);
+      clothesMat.color.setHex(theme.clothes);
+      hairMat.color.setHex(theme.hair);
+      pantsMat.color.setHex(theme.pants);
+    }
+
+    // Customer Navigation Waypoints
+    const waypointsIn = [
       new THREE.Vector3(0.8, 0, 8.5),
       new THREE.Vector3(0.8, 0, 6.2),
       new THREE.Vector3(0.8, 0, 5.0),
       new THREE.Vector3(0.8, 0, 3.8)
     ];
+
+    const waypointsOut = [
+      new THREE.Vector3(0.8, 0, 3.8),
+      new THREE.Vector3(0.8, 0, 5.0),
+      new THREE.Vector3(0.8, 0, 6.2),
+      new THREE.Vector3(0.8, 0, 9.5)
+    ];
+
+    let currentWaypoints = waypointsIn;
     let currentWaypointIdx = 1;
-    let customerSpeed = 1.35; // m/s
+    let customerSpeed = 1.4;
     let walkCycleTime = 0;
+    let doorOpenProgress = 0;
 
-    // --- Door Auto Opening Logic ---
-    let doorOpenProgress = 0; // 0 closed, 1 fully open
+    // Start Customer Function called by Flutter
+    window.startCustomer = function(orderData) {
+      if (typeof orderData === 'string') {
+        orderData = JSON.parse(orderData);
+      }
+      customer.userData.name = orderData.customerName || 'Bu Sari';
+      customer.userData.order = orderData;
+      customer.userData.state = 'WALKING_IN';
+      shoppingBag.visible = false;
 
-    // --- Camera Movement & Navigation (PRD Bab 8) ---
-    // Mode: 'TAP_AND_WALK' (default) vs 'FREE_WALK'
+      const appIdx = parseInt((orderData.appearanceId || '1').replace(/\D/g, '')) || 1;
+      applyCustomerAppearance(appIdx - 1);
+
+      customer.position.copy(waypointsIn[0]);
+      currentWaypoints = waypointsIn;
+      currentWaypointIdx = 1;
+      customer.visible = true;
+
+      window.playSfx('door_bell');
+      showToast(customer.userData.name + ' masuk ke toko...');
+    };
+
+    // Customer Happy & Leaving Function called by Flutter
+    window.customerHappy = function() {
+      customer.userData.state = 'HAPPY';
+      shoppingBag.visible = true;
+      window.playSfx('success');
+      showToast(customer.userData.name + ': "Terima kasih, kembaliannya pas!"', 3000);
+      setTimeout(() => {
+        window.customerLeave();
+      }, 1500);
+    };
+
+    window.customerLeave = function() {
+      customer.userData.state = 'WALKING_OUT';
+      currentWaypoints = waypointsOut;
+      currentWaypointIdx = 1;
+      window.playSfx('door_bell');
+    };
+
+    // ==========================================
+    // 10. CAMERA & NAVIGATION CONTROLS
+    // ==========================================
     let navigationMode = 'TAP_AND_WALK';
     let targetCameraPos = camera.position.clone();
     let targetCameraLookAt = new THREE.Vector3(0, 1.2, 0);
     let isMovingToTarget = false;
 
-    // Camera Look rotation
-    let cameraYaw = Math.PI * 0.9; // Face inward toward shelves
+    let cameraYaw = Math.PI * 0.9;
     let cameraPitch = -0.05;
-
-    // Joystick state
     const joystickState = { x: 0, y: 0, active: false };
 
-    // Function to navigate smoothly to a position
     function navigateTo(x, z, lookX, lookZ) {
       targetCameraPos.set(x, 1.2, z);
       targetCameraLookAt.set(lookX, 1.2, lookZ);
       isMovingToTarget = true;
-      sendToFlutter({
-        type: 'camera_navigating',
-        x, z
-      });
+      window.playSfx('step');
+      sendToFlutter({ type: 'camera_navigating', x, z });
     }
 
-    // Go to cashier desk
     window.goToCashier = function() {
-      // Position behind cashier desk
       navigateTo(2.0, 4.2, 0.8, 3.8);
       showToast('Kembali ke Meja Kasir');
     };
 
-    // Go to specific shelf
     window.goToShelf = function(shelfId) {
       const shelf = interactables.find(item => item.userData && item.userData.id === shelfId);
       if (shelf) {
@@ -862,13 +1230,12 @@
       }
     };
 
-    // Toggle Mode
     window.setNavigationMode = function(mode) {
       navigationMode = mode;
       const joyZone = document.getElementById('joystick-zone');
       if (mode === 'FREE_WALK') {
         joyZone.style.display = 'block';
-        showToast('Mode Jalan Bebas (Gunakan Joystick & Geser)');
+        showToast('Mode Jalan Bebas Aktif');
       } else {
         joyZone.style.display = 'none';
         showToast('Mode Ketuk & Jalan Aktif');
@@ -876,14 +1243,14 @@
       sendToFlutter({ type: 'mode_changed', mode });
     };
 
-    // --- Raycasting for Tap Interactions ---
+    // ==========================================
+    // 11. RAYCAST & TOUCH INTERACTION
+    // ==========================================
     const raycaster = new THREE.Raycaster();
     const touchCoords = new THREE.Vector2();
 
     function onPointerTap(event) {
-      // Prevent raycast trigger if dragging joystick
       if (joystickState.active) return;
-
       const clientX = event.clientX || (event.touches && event.touches[0].clientX);
       const clientY = event.clientY || (event.touches && event.touches[0].clientY);
       if (clientX === undefined) return;
@@ -892,11 +1259,9 @@
       touchCoords.y = -(clientY / window.innerHeight) * 2 + 1;
 
       raycaster.setFromCamera(touchCoords, camera);
-
-      // Check intersect with products and shelves
       const hits = raycaster.intersectObjects(interactables, true);
+
       if (hits.length > 0) {
-        // Find top-most parent in hit hierarchy that has product or shelf data
         let obj = hits[0].object;
         let foundData = null;
         while (obj && obj !== scene) {
@@ -909,9 +1274,9 @@
 
         if (foundData) {
           if (foundData.isProduct) {
-            // Pulse highlight effect
             pulseProductHighlight(obj);
-            showToast('Memeriksa: ' + foundData.name + ' (' + foundData.unitLabel + ') - Rp' + foundData.priceIdr.toLocaleString('id-ID'));
+            window.playSfx('item_click');
+            showToast(foundData.name + ' (' + foundData.unitLabel + ') — Rp' + foundData.priceIdr.toLocaleString('id-ID'));
             sendToFlutter({
               type: 'product_tapped',
               productId: foundData.id,
@@ -921,7 +1286,6 @@
               priceIdr: foundData.priceIdr
             });
           } else if (foundData.isShelf) {
-            // Walk to shelf in Tap and Walk mode
             window.goToShelf(foundData.id);
             sendToFlutter({
               type: 'shelf_tapped',
@@ -933,7 +1297,6 @@
       }
     }
 
-    // Highlight animation
     let pulsingMesh = null;
     let pulseStart = 0;
     function pulseProductHighlight(mesh) {
@@ -942,16 +1305,12 @@
     }
 
     window.addEventListener('click', onPointerTap);
-    window.addEventListener('touchend', (e) => {
-      // Small tap threshold check
-      onPointerTap(e);
-    });
+    window.addEventListener('touchend', onPointerTap);
 
-    // --- Touch Look Handling (Swipe on right side) ---
+    // Look drag (touch & mouse)
     const lookZone = document.getElementById('look-zone');
     let isTouchingLook = false;
-    let lastTouchX = 0;
-    let lastTouchY = 0;
+    let lastTouchX = 0, lastTouchY = 0;
 
     lookZone.addEventListener('touchstart', (e) => {
       isTouchingLook = true;
@@ -968,14 +1327,12 @@
 
       cameraYaw -= dx * 0.006;
       cameraPitch -= dy * 0.005;
-      // Clamp pitch (PRD: tidak menatap kaki atau mendongak berlebihan)
       cameraPitch = Math.max(-0.6, Math.min(0.5, cameraPitch));
     });
 
     lookZone.addEventListener('touchend', () => { isTouchingLook = false; });
     lookZone.addEventListener('touchcancel', () => { isTouchingLook = false; });
 
-    // Mouse drag look for Desktop / Web testing
     let isMouseDown = false;
     window.addEventListener('mousedown', (e) => {
       if (e.clientX > window.innerWidth * 0.35) {
@@ -997,7 +1354,7 @@
     });
     window.addEventListener('mouseup', () => { isMouseDown = false; });
 
-    // --- Virtual Joystick implementation ---
+    // Virtual Joystick
     const joystickZone = document.getElementById('joystick-zone');
     const joystickKnob = document.getElementById('joystick-knob');
     let joyCenter = { x: 0, y: 0 };
@@ -1038,21 +1395,23 @@
     joystickZone.addEventListener('touchend', resetJoystick);
     joystickZone.addEventListener('touchcancel', resetJoystick);
 
-    // --- Collision check helper ---
     function checkCollision(newX, newZ) {
       for (let i = 0; i < collisionBoxes.length; i++) {
         const b = collisionBoxes[i];
         if (newX >= b.minX && newX <= b.maxX && newZ >= b.minZ && newZ <= b.maxZ) {
-          return true; // Collision detected
+          return true;
         }
       }
       return false;
     }
 
-    // --- Animation & Render Loop ---
+    // ==========================================
+    // 12. MAIN ANIMATION & GAME LOOP (60 FPS)
+    // ==========================================
     let lastTime = performance.now();
     let frameCount = 0;
     let lastFpsUpdate = performance.now();
+    let lastFootstepTime = 0;
 
     function animate(now) {
       requestAnimationFrame(animate);
@@ -1068,96 +1427,98 @@
         sendToFlutter({ type: 'fps_update', fps: currentFps });
       }
 
-      // 1. Customer Animation & Waypoint Movement (PRD Bab 9)
-      if (customer.userData.state === 'SPAWN' || customer.userData.state === 'WALKING_IN') {
-        customer.userData.state = 'WALKING_IN';
-        const targetPt = customerWaypoints[currentWaypointIdx];
+      // Customer State Machine
+      const st = customer.userData.state;
+      if (st === 'WALKING_IN' || st === 'WALKING_OUT') {
+        const targetPt = currentWaypoints[currentWaypointIdx];
         const dir = new THREE.Vector3().subVectors(targetPt, customer.position);
         dir.y = 0;
         const dist = dir.length();
 
-        if (dist > 0.05) {
+        if (dist > 0.06) {
           dir.normalize();
           customer.position.addScaledVector(dir, customerSpeed * delta);
-          // Face moving direction
           customer.rotation.y = Math.atan2(dir.x, dir.z);
 
-          // Limb swinging animation
           walkCycleTime += delta * 7.5;
           const legAngle = Math.sin(walkCycleTime) * 0.45;
           leftLegGroup.rotation.x = legAngle;
           rightLegGroup.rotation.x = -legAngle;
           leftArmGroup.rotation.x = -legAngle * 0.8;
           rightArmGroup.rotation.x = legAngle * 0.8;
-          torso.position.y = 0.95 + Math.abs(Math.sin(walkCycleTime * 2)) * 0.03; // Bobbing
+          torso.position.y = 0.95 + Math.abs(Math.sin(walkCycleTime * 2)) * 0.03;
         } else {
           currentWaypointIdx++;
-          if (currentWaypointIdx >= customerWaypoints.length) {
-            // Arrived in front of cashier desk!
-            customer.userData.state = 'ARRIVED';
-            // Stand facing cashier desk
-            customer.rotation.y = 0; // Face towards positive Z (towards cashier)
-            leftLegGroup.rotation.x = 0;
-            rightLegGroup.rotation.x = 0;
-            leftArmGroup.rotation.x = 0;
-            rightArmGroup.rotation.x = 0;
+          if (currentWaypointIdx >= currentWaypoints.length) {
+            if (st === 'WALKING_IN') {
+              customer.userData.state = 'ARRIVED';
+              customer.rotation.y = 0;
+              leftLegGroup.rotation.x = 0;
+              rightLegGroup.rotation.x = 0;
+              leftArmGroup.rotation.x = 0;
+              rightArmGroup.rotation.x = 0;
 
-            showToast('Bu Sari tiba di kasir: "Halo, saya mau beli Beras & Minyak Goreng ya!"', 4000);
-            sendToFlutter({
-              type: 'customer_arrived',
-              name: customer.userData.name,
-              speech: customer.userData.speech
-            });
+              sendToFlutter({
+                type: 'customer_arrived',
+                name: customer.userData.name
+              });
+            } else {
+              customer.userData.state = 'GONE';
+              customer.visible = false;
+              sendToFlutter({ type: 'customer_left' });
+            }
           }
         }
-      } else if (customer.userData.state === 'ARRIVED') {
-        // Idle breathing animation
+      } else if (st === 'ARRIVED') {
+        // Idle breathing
         const breath = Math.sin(now * 0.003) * 0.015;
         torso.scale.set(1 + breath, 1 + breath, 1 + breath);
         head.rotation.y = Math.sin(now * 0.0015) * 0.12;
+      } else if (st === 'HAPPY') {
+        // Happy wave
+        rightArmGroup.rotation.z = Math.sin(now * 0.012) * 0.4 - 0.5;
+        torso.position.y = 0.95 + Math.abs(Math.sin(now * 0.008)) * 0.04;
       }
 
-      // 2. Door auto opening / closing based on customer position
+      // Auto Door Opening
       const distToDoor = Math.abs(customer.position.z - 6.0);
-      const shouldOpenDoor = (distToDoor < 1.6 && customer.position.z > 4.5);
+      const shouldOpenDoor = (distToDoor < 1.7 && customer.position.z > 4.4 && customer.visible);
       if (shouldOpenDoor) {
-        doorOpenProgress = Math.min(1.0, doorOpenProgress + delta * 2.5);
+        doorOpenProgress = Math.min(1.0, doorOpenProgress + delta * 2.8);
       } else {
-        doorOpenProgress = Math.max(0.0, doorOpenProgress - delta * 2.0);
+        doorOpenProgress = Math.max(0.0, doorOpenProgress - delta * 2.2);
       }
       doorLeft.position.x = -0.7 - doorOpenProgress * 0.75;
       doorRight.position.x = 0.7 + doorOpenProgress * 0.75;
 
-      // 3. Highlight pulse update
+      // Highlight Pulse
       if (pulsingMesh) {
         const elapsed = (now - pulseStart) / 1000;
         if (elapsed < 1.5) {
-          const scale = 1.0 + Math.sin(elapsed * 10) * 0.08;
-          pulsingMesh.scale.set(scale, scale, scale);
+          const s = 1.0 + Math.sin(elapsed * 10) * 0.08;
+          pulsingMesh.scale.set(s, s, s);
         } else {
           pulsingMesh.scale.set(1, 1, 1);
           pulsingMesh = null;
         }
       }
 
-      // 4. Floor ring breathing animation
-      const ringPulse = 0.65 + Math.sin(now * 0.004) * 0.25;
-      [shelfSembako, shelfMakanan, shelfMinuman, shelfBumbu, shelfRumah].forEach(s => {
-        if (s.userData.floorMarker) {
-          s.userData.floorMarker.material.opacity = ringPulse;
-        }
-      });
+      // Floor marker glow
+      if (isFloorGuideVisible) {
+        const ringPulse = 0.65 + Math.sin(now * 0.004) * 0.25;
+        [shelfSembako, shelfMakanan, shelfMinuman, shelfBumbu, shelfRumah].forEach(s => {
+          if (s.userData.floorMarker) {
+            s.userData.floorMarker.material.opacity = ringPulse;
+          }
+        });
+      }
 
-      // 5. Camera Control Update
+      // Camera Controls
       if (navigationMode === 'TAP_AND_WALK' && isMovingToTarget) {
-        // Smoothly interpolate position
         camera.position.lerp(targetCameraPos, delta * 3.2);
-
-        // Look at target
         const lookDir = new THREE.Vector3().subVectors(targetCameraLookAt, camera.position);
         lookDir.y = 0;
         const targetYaw = Math.atan2(-lookDir.x, -lookDir.z);
-        // Interpolate yaw
         cameraYaw = THREE.MathUtils.lerp(cameraYaw, targetYaw, delta * 3.5);
         cameraPitch = THREE.MathUtils.lerp(cameraPitch, -0.05, delta * 3.5);
 
@@ -1166,9 +1527,8 @@
           isMovingToTarget = false;
         }
       } else if (navigationMode === 'FREE_WALK') {
-        // Free joystick walk
         if (joystickState.active && (joystickState.x !== 0 || joystickState.y !== 0)) {
-          const speed = 2.2 * delta; // 2.2 m/s
+          const speed = 2.2 * delta;
           const forward = -joystickState.y;
           const strafe = joystickState.x;
 
@@ -1181,17 +1541,20 @@
           const newX = camera.position.x + moveX;
           const newZ = camera.position.z + moveZ;
 
-          // Collision handling
           if (!checkCollision(newX, camera.position.z)) {
             camera.position.x = newX;
           }
           if (!checkCollision(camera.position.x, newZ)) {
             camera.position.z = newZ;
           }
+
+          if (now - lastFootstepTime > 380) {
+            lastFootstepTime = now;
+            window.playSfx('step');
+          }
         }
       }
 
-      // Apply camera rotation
       const euler = new THREE.Euler(cameraPitch, cameraYaw, 0, 'YXZ');
       camera.quaternion.setFromEuler(euler);
 
@@ -1200,17 +1563,14 @@
 
     requestAnimationFrame(animate);
 
-    // Window Resize Handling
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Notify Flutter that 3D scene is ready
     window.addEventListener('DOMContentLoaded', () => {
-      sendToFlutter({ type: 'scene_ready', fpsTarget: 30 });
-      showToast('Toko Cerdas 3D Siap! Sentuh rak atau barang untuk berinteraksi.', 3000);
+      sendToFlutter({ type: 'scene_ready', fpsTarget: 60 });
     });
   </script>
 </body>

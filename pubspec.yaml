@@ -38,6 +38,7 @@ dependencies:
   flutter_riverpod: ^3.3.2
   pointer_interceptor: ^0.10.1+2
   webview_flutter_web: ^0.2.3+4
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

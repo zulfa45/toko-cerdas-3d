@@ -4,11 +4,15 @@ import '../data/product_catalog.dart';
 class ProductDetailDialog extends StatelessWidget {
   final Product product;
   final VoidCallback onClose;
+  final VoidCallback onAddToBasket;
+  final bool isNeededInOrder;
 
   const ProductDetailDialog({
     super.key,
     required this.product,
     required this.onClose,
+    required this.onAddToBasket,
+    this.isNeededInOrder = true,
   });
 
   @override
@@ -50,7 +54,7 @@ class ProductDetailDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Product Icon (Large & Friendly)
+            // Product Icon
             Container(
               width: 90,
               height: 90,
@@ -67,7 +71,7 @@ class ProductDetailDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Product Name (Min 18px logical size per PRD)
+            // Product Name
             Text(
               product.name,
               style: const TextStyle(
@@ -123,40 +127,42 @@ class ProductDetailDialog extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Positive learning feedback
-            const Text(
-              '✓ Barang terdeteksi lewat Raycast 3D di Rak Toko!',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF27AE60),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-
-            // Large Action Button (Min 56px height per PRD)
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: onClose,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A085),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  elevation: 3,
-                ),
-                child: const Text(
-                  'Kembali ke Toko',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: onClose,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      onAddToBasket();
+                      onClose();
+                    },
+                    icon: const Icon(Icons.shopping_cart_checkout),
+                    label: Text(
+                      isNeededInOrder ? 'Ambil Barang 🛒' : 'Bukan Pesanan',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isNeededInOrder ? const Color(0xFF16A085) : const Color(0xFF95A5A6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 3,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
