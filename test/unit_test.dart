@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toko_cerdas/data/level_config.dart';
 import 'package:toko_cerdas/data/product_catalog.dart';
 import 'package:toko_cerdas/game/game_controller.dart';
+import 'package:toko_cerdas/ui/home_screen.dart';
 import 'package:toko_cerdas/ui/hud_overlay.dart';
 import 'package:toko_cerdas/ui/product_detail_dialog.dart';
 import 'package:toko_cerdas/ui/shopping_list_widget.dart';
@@ -268,6 +269,20 @@ void main() {
 
       await tester.tap(find.byType(GestureDetector).first);
       await tester.pump();
+    });
+
+    testWidgets('HomeScreen renders new overhauled voxel warung layout and day options', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: HomeScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('TOKO CERDAS 3D'), findsOneWidget);
+      expect(find.textContaining('BUKA TOKO'), findsOneWidget);
+      expect(find.text('HARI 1'), findsOneWidget);
     });
   });
 }

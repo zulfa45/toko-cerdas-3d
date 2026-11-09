@@ -17,7 +17,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #6ba7dc;
+      background-color: #5c94d4;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     #canvas-container {
@@ -29,13 +29,13 @@
     }
     #toast-bubble {
       position: absolute;
-      top: 20px;
+      top: 18px;
       left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: rgba(35, 23, 16, 0.92);
-      color: #ffd166;
+      transform: translateX(-50%) translateY(-25px);
+      background: rgba(43, 27, 23, 0.95);
+      color: #f1c40f;
       border: 2px solid #c68a4c;
-      padding: 8px 22px;
+      padding: 8px 24px;
       border-radius: 20px;
       font-size: 14px;
       font-weight: bold;
@@ -43,7 +43,7 @@
       transition: opacity 0.25s ease, transform 0.25s ease;
       opacity: 0;
       z-index: 50;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.45);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -52,14 +52,14 @@
       position: absolute;
       pointer-events: none;
       display: none;
-      font-size: 24px;
+      font-size: 26px;
       z-index: 60;
-      animation: sparklePop 0.6s ease-out forwards;
+      animation: sparklePop 0.55s ease-out forwards;
     }
     @keyframes sparklePop {
-      0% { transform: scale(0.5) translate(0, 0); opacity: 1; }
+      0% { transform: scale(0.4) translate(0, 0); opacity: 1; }
       50% { transform: scale(1.4) translate(0, -25px); opacity: 1; }
-      100% { transform: scale(0.8) translate(0, -45px); opacity: 0; }
+      100% { transform: scale(0.8) translate(0, -50px); opacity: 0; }
     }
   </style>
   <script src="three.min.js"></script>
@@ -79,13 +79,9 @@
     function getAudioContext() {
       if (!audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-          audioCtx = new AudioContext();
-        }
+        if (AudioContext) audioCtx = new AudioContext();
       }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     }
 
@@ -98,96 +94,61 @@
 
         if (type === 'door_bell') {
           // Warm shop doorbell chime (ting-tong)
-          const osc1 = ctx.createOscillator();
-          const osc2 = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc1.type = 'sine';
-          osc2.type = 'sine';
-          osc1.frequency.setValueAtTime(659.25, now); // E5
-          osc2.frequency.setValueAtTime(523.25, now + 0.18); // C5
-          gain.gain.setValueAtTime(0.20, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-          osc1.connect(gain);
-          osc2.connect(gain);
-          gain.connect(ctx.destination);
-          osc1.start(now);
-          osc1.stop(now + 0.22);
-          osc2.start(now + 0.18);
-          osc2.stop(now + 0.9);
+          const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
+          o1.type = 'sine'; o2.type = 'sine';
+          o1.frequency.setValueAtTime(659.25, now);
+          o2.frequency.setValueAtTime(523.25, now + 0.18);
+          g.gain.setValueAtTime(0.20, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+          o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+          o1.start(now); o1.stop(now + 0.22);
+          o2.start(now + 0.18); o2.stop(now + 0.9);
         } else if (type === 'item_click') {
-          // Satisfying crisp item pickup pop
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
+          // Crisp pickup pop
+          const osc = ctx.createOscillator(), g = ctx.createGain();
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(440, now);
           osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
-          gain.gain.setValueAtTime(0.25, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.12);
+          g.gain.setValueAtTime(0.25, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+          osc.connect(g); g.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.12);
         } else if (type === 'kaching') {
           // Cash register ring
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
+          const osc = ctx.createOscillator(), g = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(987.77, now); // B5
-          osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.65);
+          osc.frequency.setValueAtTime(987.77, now);
+          osc.frequency.setValueAtTime(1318.51, now + 0.08);
+          g.gain.setValueAtTime(0.22, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+          osc.connect(g); g.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.65);
         } else if (type === 'coin') {
-          // Cheerful coin clink
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
+          const osc = ctx.createOscillator(), g = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(1046.50, now); // C6
-          osc.frequency.setValueAtTime(1396.91, now + 0.06); // F6
-          gain.gain.setValueAtTime(0.25, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.5);
+          osc.frequency.setValueAtTime(1046.50, now);
+          osc.frequency.setValueAtTime(1396.91, now + 0.06);
+          g.gain.setValueAtTime(0.25, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc.connect(g); g.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.5);
         } else if (type === 'success') {
-          // Success arpeggio (C - E - G - C)
           [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
+            const osc = ctx.createOscillator(), g = ctx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, now + i * 0.1);
-            gain.gain.setValueAtTime(0.2, now + i * 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now + i * 0.1);
-            osc.stop(now + i * 0.1 + 0.35);
+            g.gain.setValueAtTime(0.2, now + i * 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
+            osc.connect(g); g.connect(ctx.destination);
+            osc.start(now + i * 0.1); osc.stop(now + i * 0.1 + 0.35);
           });
-        } else if (type === 'retry') {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(392.00, now);
-          osc.frequency.setValueAtTime(329.63, now + 0.15);
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.5);
         }
       } catch (e) {
         console.warn('Audio play error:', e);
       }
     };
 
-    window.setAudioEnabled = function(enabled) {
-      isAudioEnabled = enabled;
-    };
+    window.setAudioEnabled = function(enabled) { isAudioEnabled = enabled; };
 
     // ==========================================
     // 2. BRIDGE & TOAST
@@ -209,7 +170,7 @@
       clearTimeout(window._toastTimeout);
       window._toastTimeout = setTimeout(() => {
         bubble.style.opacity = '0';
-        bubble.style.transform = 'translateX(-50%) translateY(-20px)';
+        bubble.style.transform = 'translateX(-50%) translateY(-25px)';
       }, durationMs);
     }
 
@@ -219,23 +180,23 @@
       sp.style.top = y + 'px';
       sp.style.display = 'block';
       sp.style.animation = 'none';
-      sp.offsetHeight; // reflow
-      sp.style.animation = 'sparklePop 0.6s ease-out forwards';
-      setTimeout(() => { sp.style.display = 'none'; }, 600);
+      sp.offsetHeight;
+      sp.style.animation = 'sparklePop 0.55s ease-out forwards';
+      setTimeout(() => { sp.style.display = 'none'; }, 550);
     }
 
     // ==========================================
-    // 3. THREE.JS SCENE SETUP
+    // 3. THREE.JS SCENE SETUP & CAMERA
     // ==========================================
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x6ba7dc); // Sky blue matching reference image
-    scene.fog = new THREE.FogExp2(0x8bc0ec, 0.015);
+    scene.background = new THREE.Color(0x5c94d4); // Vibrant soft sunny sky
+    scene.fog = new THREE.FogExp2(0x7fb3ea, 0.012);
 
-    // Camera placed exactly at shopkeeper's view behind wooden counter
-    const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.25, 0.45);
-    camera.lookAt(0, 1.15, -1.8);
+    const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 100);
+    // Position camera so counter, left shelf, right shelf, and customer are 100% in view
+    camera.position.set(0, 1.20, 0.72);
+    camera.lookAt(0, 1.12, -1.0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -245,31 +206,44 @@
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
-    // Warm, sunny daylight
-    const ambientLight = new THREE.AmbientLight(0xfff6ea, 0.95);
+    // Dynamic Camera FOV based on aspect ratio
+    function updateCameraViewport() {
+      const aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = aspect;
+      // We want visible horizontal width to cover at least 2.5m
+      const dist = 0.72 - (-0.35); // distance to counter ~1.07m
+      const targetHalfWidth = 1.32;
+      const tanHalfH = targetHalfWidth / dist;
+      const tanHalfV = tanHalfH / aspect;
+      const fovV = 2 * Math.atan(tanHalfV) * (180 / Math.PI);
+      camera.fov = Math.max(48, Math.min(78, fovV));
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener('resize', updateCameraViewport);
+
+    // Warm, Rich Sunlight & Ambient Lighting
+    const ambientLight = new THREE.AmbientLight(0xffeedd, 0.95);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffaec, 1.1);
-    sunLight.position.set(3, 8, 4);
+    const sunLight = new THREE.DirectionalLight(0xfff6e5, 1.25);
+    sunLight.position.set(2.5, 7.0, 3.5);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
-    sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 25;
     sunLight.shadow.bias = -0.001;
     scene.add(sunLight);
 
-    const counterFillLight = new THREE.PointLight(0xffecd2, 0.5, 6);
-    counterFillLight.position.set(0, 1.8, 0);
-    scene.add(counterFillLight);
+    const counterLight = new THREE.PointLight(0xffdfba, 0.55, 5);
+    counterLight.position.set(0, 1.7, 0);
+    scene.add(counterLight);
 
     // ==========================================
-    // 4. PROCEDURAL PIXEL-ART TEXTURE GENERATORS
+    // 4. PIXEL-ART TEXTURE GENERATOR
     // ==========================================
     function createPixelTexture(w, h, drawFn) {
       const cv = document.createElement('canvas');
-      cv.width = w;
-      cv.height = h;
+      cv.width = w; cv.height = h;
       const ctx = cv.getContext('2d');
       ctx.imageSmoothingEnabled = false;
       drawFn(ctx, w, h);
@@ -279,42 +253,40 @@
       return tex;
     }
 
-    // Warm Wood Texture with pixel boards
-    function createWoodTexture(baseColor = '#a86532', darkColor = '#80481e', boardWidth = 32) {
+    // Warm Teak Wood Texture (matching reference image)
+    function createWoodTexture(base = '#8e5024', dark = '#6e3915', boardW = 24) {
       return createPixelTexture(128, 128, (ctx, w, h) => {
-        ctx.fillStyle = baseColor;
+        ctx.fillStyle = base;
         ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = darkColor;
-        for (let x = 0; x < w; x += boardWidth) {
+        ctx.fillStyle = dark;
+        for (let x = 0; x < w; x += boardW) {
           ctx.fillRect(x, 0, 2, h);
         }
-        // Pixel wood grains
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
-        for (let y = 8; y < h; y += 16) {
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        for (let y = 8; y < h; y += 14) {
           ctx.fillRect(0, y, w, 2);
-          ctx.fillRect(10, y + 4, 30, 1);
-          ctx.fillRect(70, y + 6, 25, 1);
+          ctx.fillRect(8, y + 4, 32, 1);
+          ctx.fillRect(68, y + 6, 28, 1);
         }
       });
     }
 
-    // Keripik Bag Texture (Red with golden chips)
+    // Keripik Bag (Glossy Red with yellow chips)
     function createKeripikTexture() {
       return createPixelTexture(128, 128, (ctx, w, h) => {
         ctx.fillStyle = '#d63031';
         ctx.fillRect(0, 0, w, h);
-        // Top and bottom seal crimps
         ctx.fillStyle = '#b71515';
         ctx.fillRect(0, 0, w, 8);
         ctx.fillRect(0, h - 8, w, 8);
         // Yellow banner
         ctx.fillStyle = '#f1c40f';
-        ctx.fillRect(12, 28, w - 24, 24);
+        ctx.fillRect(10, 26, w - 20, 26);
         ctx.fillStyle = '#c0392b';
-        ctx.font = 'bold 15px sans-serif';
+        ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Keripik', w / 2, 45);
-        // Potato chips pile
+        // Golden potato chips
         ctx.fillStyle = '#f39c12';
         ctx.beginPath();
         ctx.arc(44, 82, 14, 0, Math.PI * 2);
@@ -329,26 +301,22 @@
       });
     }
 
-    // Biskuit Package Texture (Blue with chocolate cookies)
+    // Biskuit Package (Vibrant Blue with cookies)
     function createBiskuitTexture() {
       return createPixelTexture(128, 128, (ctx, w, h) => {
-        ctx.fillStyle = '#1e6091';
+        ctx.fillStyle = '#1b5299';
         ctx.fillRect(0, 0, w, h);
-        // Top & bottom seals
-        ctx.fillStyle = '#184e77';
+        ctx.fillStyle = '#113a70';
         ctx.fillRect(0, 0, w, 8);
         ctx.fillRect(0, h - 8, w, 8);
-        // White Title
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px sans-serif';
+        ctx.font = 'bold 17px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Biskuit', w / 2, 40);
-        // Chocolate chip cookies
+        ctx.fillText('Biskuit', w / 2, 42);
+        // Cookies
         function drawCookie(cx, cy, r) {
           ctx.fillStyle = '#d4a373';
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#6b4f34';
           ctx.beginPath();
           ctx.arc(cx - 4, cy - 3, 2.5, 0, Math.PI * 2);
@@ -356,112 +324,70 @@
           ctx.arc(cx, cy + 4, 2.5, 0, Math.PI * 2);
           ctx.fill();
         }
-        drawCookie(48, 80, 18);
-        drawCookie(82, 85, 16);
+        drawCookie(48, 82, 18);
+        drawCookie(82, 86, 16);
       });
     }
 
-    // Susu Carton Texture (Green with cute cow face)
+    // Susu Carton (Green bottom, white top, smiling cow face)
     function createSusuTexture() {
       return createPixelTexture(128, 128, (ctx, w, h) => {
-        // Green bottom
-        ctx.fillStyle = '#40916c';
+        ctx.fillStyle = '#2d6a4f';
         ctx.fillRect(0, 48, w, h - 48);
-        // White top
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, w, 48);
-        // Text Susu
         ctx.fillStyle = '#1b4332';
         ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Susu', w / 2, 34);
-        // Cute smiling cow face
-        const cx = w / 2;
-        const cy = 84;
-        // Cow head
+        // Cow face
+        const cx = w / 2, cy = 84;
         ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, 26, 22, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Cow spots
+        ctx.beginPath(); ctx.ellipse(cx, cy, 26, 22, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#2d3436';
-        ctx.beginPath();
-        ctx.arc(cx - 14, cy - 10, 8, 0, Math.PI * 2);
-        ctx.fill();
-        // Cow pink muzzle
+        ctx.beginPath(); ctx.arc(cx - 14, cy - 10, 8, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#ffb4a2';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + 8, 16, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Nostrils
+        ctx.beginPath(); ctx.ellipse(cx, cy + 8, 16, 10, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#e56b6f';
-        ctx.fillRect(cx - 5, cy + 6, 3, 4);
-        ctx.fillRect(cx + 2, cy + 6, 3, 4);
-        // Eyes
+        ctx.fillRect(cx - 5, cy + 6, 3, 4); ctx.fillRect(cx + 2, cy + 6, 3, 4);
         ctx.fillStyle = '#2d3436';
-        ctx.beginPath();
-        ctx.arc(cx - 10, cy - 4, 3, 0, Math.PI * 2);
-        ctx.arc(cx + 10, cy - 4, 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(cx - 10, cy - 4, 3, 0, Math.PI * 2); ctx.arc(cx + 10, cy - 4, 3, 0, Math.PI * 2); ctx.fill();
       });
     }
 
-    // Indomie Cup Texture (White cup with red header & noodle graphic)
+    // Indomie Cup (White cup with red rim, noodle bowl)
     function createIndomieTexture() {
       return createPixelTexture(128, 128, (ctx, w, h) => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, w, h);
-        // Red top band
         ctx.fillStyle = '#c0392b';
         ctx.fillRect(0, 0, w, 32);
-        // Red Indomie script
         ctx.fillStyle = '#ffffff';
         ctx.font = 'italic bold 18px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Indomie', w / 2, 23);
-        // Steaming ramen bowl
         ctx.fillStyle = '#e67e22';
-        ctx.beginPath();
-        ctx.arc(w / 2, 85, 30, 0, Math.PI);
-        ctx.fill();
-        // Yellow noodles
+        ctx.beginPath(); ctx.arc(w / 2, 85, 30, 0, Math.PI); ctx.fill();
         ctx.fillStyle = '#f1c40f';
-        ctx.beginPath();
-        ctx.ellipse(w / 2, 85, 28, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Egg slice
+        ctx.beginPath(); ctx.ellipse(w / 2, 85, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(w / 2 - 8, 83, 7, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(w / 2 - 8, 83, 7, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#f39c12';
-        ctx.beginPath();
-        ctx.arc(w / 2 - 8, 83, 4, 0, Math.PI * 2);
-        ctx.fill();
-        // Green scallions
+        ctx.beginPath(); ctx.arc(w / 2 - 8, 83, 4, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#27ae60';
-        ctx.fillRect(w / 2 + 8, 80, 4, 4);
-        ctx.fillRect(w / 2 + 14, 84, 4, 4);
+        ctx.fillRect(w / 2 + 8, 80, 4, 4); ctx.fillRect(w / 2 + 14, 84, 4, 4);
       });
     }
 
-    // AQUA Bottle Label Texture
+    // AQUA Bottle Label
     function createAquaTexture() {
       return createPixelTexture(128, 64, (ctx, w, h) => {
         ctx.fillStyle = '#0077b6';
         ctx.fillRect(0, 0, w, h);
-        // White mountain wave
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.moveTo(0, h);
-        ctx.lineTo(20, h - 18);
-        ctx.lineTo(40, h);
-        ctx.lineTo(64, h - 22);
-        ctx.lineTo(90, h);
-        ctx.lineTo(110, h - 16);
-        ctx.lineTo(w, h);
+        ctx.moveTo(0, h); ctx.lineTo(20, h - 18); ctx.lineTo(40, h); ctx.lineTo(64, h - 22); ctx.lineTo(90, h); ctx.lineTo(110, h - 16); ctx.lineTo(w, h);
         ctx.fill();
-        // AQUA bold text
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 20px Arial, sans-serif';
         ctx.textAlign = 'center';
@@ -469,16 +395,14 @@
       });
     }
 
-    // Price Tag Texture (Cream card with dark border)
+    // Price Tag (Cream card with dark brown border)
     function createPriceTagTexture(priceText) {
       return createPixelTexture(128, 48, (ctx, w, h) => {
         ctx.fillStyle = '#fcf8ee';
         ctx.fillRect(0, 0, w, h);
-        // Dark brown border
         ctx.strokeStyle = '#2b1b17';
         ctx.lineWidth = 4;
         ctx.strokeRect(2, 2, w - 4, h - 4);
-        // Text
         ctx.fillStyle = '#2b1b17';
         ctx.font = 'bold 18px monospace, sans-serif';
         ctx.textAlign = 'center';
@@ -487,85 +411,29 @@
       });
     }
 
-    // Hanging Shop Board Texture
-    function createSignboardTexture() {
-      return createPixelTexture(256, 100, (ctx, w, h) => {
-        ctx.fillStyle = '#7a431d';
-        ctx.fillRect(0, 0, w, h);
-        ctx.strokeStyle = '#4e2a10';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(3, 3, w - 6, h - 6);
-        ctx.fillStyle = '#ffd166';
-        ctx.font = 'bold 24px monospace, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('TOKO CERDAS', w / 2, h / 2);
-      });
-    }
-
-    // Striped Awning Texture (Blue and White)
-    function createAwningTexture() {
-      return createPixelTexture(64, 64, (ctx, w, h) => {
-        ctx.fillStyle = '#3498db';
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, w / 2, h);
-      });
-    }
-
-    // Cobblestone Ground Texture
-    function createCobblestoneTexture() {
-      return createPixelTexture(128, 128, (ctx, w, h) => {
-        ctx.fillStyle = '#b8b2a8';
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = '#9b948a';
-        for (let y = 0; y < h; y += 16) {
-          const offset = (y / 16) % 2 === 0 ? 0 : 8;
-          for (let x = -8; x < w; x += 16) {
-            ctx.strokeRect(x + offset + 1, y + 1, 14, 14);
-          }
-        }
-      });
-    }
-
-    // Speech Bubble Texture with Shopping Cart icon 🛒
+    // Speech Bubble with Shopping Cart 🛒
     function createCartBubbleTexture() {
       return createPixelTexture(128, 96, (ctx, w, h) => {
-        ctx.fillStyle = 'rgba(0,0,0,0)';
         ctx.clearRect(0, 0, w, h);
-        // White rounded bubble box
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#2b1b17';
         ctx.lineWidth = 4;
-        const bx = 8, by = 6, bw = 112, bh = 64, br = 12;
         ctx.beginPath();
-        ctx.roundRect(bx, by, bw, bh, br);
-        ctx.fill();
-        ctx.stroke();
-
-        // Bubble pointer tail
-        ctx.fillStyle = '#ffffff';
+        ctx.roundRect(8, 6, 112, 64, 12);
+        ctx.fill(); ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(w / 2 - 8, by + bh);
-        ctx.lineTo(w / 2, by + bh + 14);
-        ctx.lineTo(w / 2 + 8, by + bh);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Fix tail seam
+        ctx.moveTo(w / 2 - 8, 70); ctx.lineTo(w / 2, 84); ctx.lineTo(w / 2 + 8, 70);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(w / 2 - 6, by + bh - 2, 12, 4);
-
-        // Shopping cart pixel emoji/drawing
+        ctx.fillRect(w / 2 - 6, 68, 12, 4);
         ctx.font = '32px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('🛒', w / 2, by + bh / 2 + 2);
+        ctx.fillText('🛒', w / 2, 38);
       });
     }
 
-    // Happy Speech Bubble Texture with Heart ❤️
+    // Happy Heart Bubble ❤️
     function createHappyBubbleTexture() {
       return createPixelTexture(128, 96, (ctx, w, h) => {
         ctx.clearRect(0, 0, w, h);
@@ -574,18 +442,12 @@
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.roundRect(8, 6, 112, 64, 12);
-        ctx.fill();
-        ctx.stroke();
-        // Tail
+        ctx.fill(); ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(w / 2 - 8, 70);
-        ctx.lineTo(w / 2, 84);
-        ctx.lineTo(w / 2 + 8, 70);
-        ctx.fill();
-        ctx.stroke();
+        ctx.moveTo(w / 2 - 8, 70); ctx.lineTo(w / 2, 84); ctx.lineTo(w / 2 + 8, 70);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(w / 2 - 6, 68, 12, 4);
-        // Red heart
         ctx.font = '32px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -593,145 +455,145 @@
       });
     }
 
-    // Shared Wood Materials
-    const woodTexture = createWoodTexture('#a86532', '#7e461e', 32);
-    const darkWoodTexture = createWoodTexture('#633618', '#42220d', 16);
-    const woodMaterial = new THREE.MeshStandardMaterial({ map: woodTexture, roughness: 0.7 });
-    const darkWoodMaterial = new THREE.MeshStandardMaterial({ map: darkWoodTexture, roughness: 0.8 });
+    // Striped Market Canopy
+    function createAwningTexture() {
+      return createPixelTexture(64, 64, (ctx, w, h) => {
+        ctx.fillStyle = '#2980b9';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w / 2, h);
+      });
+    }
+
+    // Cobblestone ground
+    function createCobbleTexture() {
+      return createPixelTexture(128, 128, (ctx, w, h) => {
+        ctx.fillStyle = '#b0a89c';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#948a7d';
+        for (let y = 0; y < h; y += 16) {
+          const off = (y / 16) % 2 === 0 ? 0 : 8;
+          for (let x = -8; x < w; x += 16) {
+            ctx.strokeRect(x + off + 1, y + 1, 14, 14);
+          }
+        }
+      });
+    }
+
+    const woodTexture = createWoodTexture('#8e5024', '#663612', 24);
+    const darkWoodTexture = createWoodTexture('#5c300f', '#3b1e09', 16);
+    const woodMat = new THREE.MeshStandardMaterial({ map: woodTexture, roughness: 0.7 });
+    const darkWoodMat = new THREE.MeshStandardMaterial({ map: darkWoodTexture, roughness: 0.8 });
 
     // ==========================================
-    // 5. WARUNG STRUCTURE (COUNTER, SHELVES, ROOF)
+    // 5. WARUNG STRUCTURE (COUNTER & SHELVES)
     // ==========================================
     const warungGroup = new THREE.Group();
     scene.add(warungGroup);
 
-    // Counter Desk Top
+    // Counter Desk (Warm Wood)
     const counterDesk = new THREE.Mesh(
-      new THREE.BoxGeometry(3.6, 0.08, 0.9),
-      woodMaterial
+      new THREE.BoxGeometry(2.6, 0.08, 0.75),
+      woodMat
     );
-    counterDesk.position.set(0, 0.92, -0.35);
+    counterDesk.position.set(0, 0.90, -0.28);
     counterDesk.receiveShadow = true;
     warungGroup.add(counterDesk);
 
-    // Counter Desk Front Panel
     const counterFront = new THREE.Mesh(
-      new THREE.BoxGeometry(3.6, 0.92, 0.06),
-      darkWoodMaterial
+      new THREE.BoxGeometry(2.6, 0.90, 0.06),
+      darkWoodMat
     );
-    counterFront.position.set(0, 0.46, -0.77);
+    counterFront.position.set(0, 0.45, -0.65);
     warungGroup.add(counterFront);
 
     // Counter Mat in Center (Clickable)
     const counterMat = new THREE.Mesh(
-      new THREE.BoxGeometry(1.05, 0.015, 0.52),
-      new THREE.MeshStandardMaterial({ color: 0x2b2d31, roughness: 0.85 })
+      new THREE.BoxGeometry(0.72, 0.015, 0.42),
+      new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.85 })
     );
-    counterMat.position.set(0, 0.965, -0.35);
+    counterMat.position.set(0, 0.945, -0.28);
     counterMat.userData = { isCashierTrigger: true };
     warungGroup.add(counterMat);
 
     // Cash Register POS on Left Counter
     const registerGroup = new THREE.Group();
-    registerGroup.position.set(-0.85, 0.96, -0.38);
+    registerGroup.position.set(-0.52, 0.94, -0.32);
     // Base drawer
     const regBase = new THREE.Mesh(
-      new THREE.BoxGeometry(0.55, 0.18, 0.48),
+      new THREE.BoxGeometry(0.38, 0.14, 0.36),
       new THREE.MeshStandardMaterial({ color: 0x24262a, roughness: 0.7 })
     );
-    regBase.position.y = 0.09;
+    regBase.position.y = 0.07;
     registerGroup.add(regBase);
     // Monitor screen stand
     const regStand = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.16, 0.12),
+      new THREE.BoxGeometry(0.08, 0.12, 0.08),
       new THREE.MeshStandardMaterial({ color: 0x1d1e22 })
     );
-    regStand.position.set(0, 0.26, -0.05);
+    regStand.position.set(0, 0.20, -0.04);
     registerGroup.add(regStand);
     // Tilted Touch Screen Monitor
     const regScreen = new THREE.Mesh(
-      new THREE.BoxGeometry(0.48, 0.32, 0.05),
+      new THREE.BoxGeometry(0.36, 0.24, 0.04),
       new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.5 })
     );
-    regScreen.position.set(0, 0.36, -0.02);
+    regScreen.position.set(0, 0.28, -0.02);
     regScreen.rotation.x = -0.25;
     registerGroup.add(regScreen);
     // Screen display face
     const regDisplay = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.42, 0.26),
+      new THREE.PlaneGeometry(0.32, 0.20),
       new THREE.MeshBasicMaterial({ color: 0x2f3542 })
     );
-    regDisplay.position.set(0, 0.362, 0.008);
+    regDisplay.position.set(0, 0.282, 0.002);
     regDisplay.rotation.x = -0.25;
     registerGroup.add(regDisplay);
 
     registerGroup.userData = { isCashierTrigger: true };
     warungGroup.add(registerGroup);
 
-    // Pen Cup Container on Right Counter
+    // Pen Cup on Right Counter
     const penGroup = new THREE.Group();
-    penGroup.position.set(0.85, 0.96, -0.38);
+    penGroup.position.set(0.55, 0.94, -0.30);
     const penCup = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.09, 0.08, 0.22, 16),
-      new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.6 })
+      new THREE.CylinderGeometry(0.07, 0.065, 0.18, 16),
+      new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.6 })
     );
-    penCup.position.y = 0.11;
+    penCup.position.y = 0.09;
     penGroup.add(penCup);
-    // Pens inside
-    const pen1 = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.012, 0.012, 0.28, 8),
-      new THREE.MeshStandardMaterial({ color: 0x1e272e })
-    );
-    pen1.position.set(-0.03, 0.18, 0);
-    pen1.rotation.z = 0.15;
+    const pen1 = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.24, 8), new THREE.MeshStandardMaterial({ color: 0x1e272e }));
+    pen1.position.set(-0.02, 0.16, 0); pen1.rotation.z = 0.15;
     penGroup.add(pen1);
-    const pen2 = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.012, 0.012, 0.30, 8),
-      new THREE.MeshStandardMaterial({ color: 0x0984e3 })
-    );
-    pen2.position.set(0.03, 0.19, -0.01);
-    pen2.rotation.z = -0.22;
+    const pen2 = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.25, 8), new THREE.MeshStandardMaterial({ color: 0x0984e3 }));
+    pen2.position.set(0.02, 0.17, -0.01); pen2.rotation.z = -0.22;
     penGroup.add(pen2);
     warungGroup.add(penGroup);
 
-    // Wooden Frame Posts & Overhead Rafters
-    const postMat = woodMaterial;
-    // Left & Right Front Posts
-    const postLeft = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.4, 0.14), postMat);
-    postLeft.position.set(-1.18, 1.2, -0.75);
+    // Timber Roof Posts & Rafters
+    const postLeft = new THREE.Mesh(new THREE.BoxGeometry(0.10, 2.2, 0.10), woodMat);
+    postLeft.position.set(-0.76, 1.2, -0.65);
     warungGroup.add(postLeft);
 
-    const postRight = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.4, 0.14), postMat);
-    postRight.position.set(1.18, 1.2, -0.75);
+    const postRight = new THREE.Mesh(new THREE.BoxGeometry(0.10, 2.2, 0.10), woodMat);
+    postRight.position.set(0.76, 1.2, -0.65);
     warungGroup.add(postRight);
 
-    // Top Crossbeam above opening
-    const topBeam = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.14, 0.14), postMat);
-    topBeam.position.set(0, 1.95, -0.75);
+    const topBeam = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.10, 0.10), woodMat);
+    topBeam.position.set(0, 1.85, -0.65);
     warungGroup.add(topBeam);
 
-    // Ceiling Rafters
-    for (let z = -0.75; z <= 0.6; z += 0.35) {
-      const rafter = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.08, 0.08), darkWoodMaterial);
-      rafter.position.set(0, 2.15, z);
-      warungGroup.add(rafter);
-    }
-
-    // Hanging Wooden Signboard in Window
+    // Subtle Hanging Signboard
     const signGroup = new THREE.Group();
-    signGroup.position.set(0.68, 1.68, -0.72);
+    signGroup.position.set(0.42, 1.62, -0.63);
     const signboard = new THREE.Mesh(
-      new THREE.BoxGeometry(0.58, 0.24, 0.02),
-      new THREE.MeshStandardMaterial({ map: createSignboardTexture(), roughness: 0.7 })
+      new THREE.BoxGeometry(0.38, 0.16, 0.02),
+      woodMat
     );
     signGroup.add(signboard);
-    // Small suspension chains
-    const chain1 = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.16, 6), new THREE.MeshBasicMaterial({ color: 0x444444 }));
-    chain1.position.set(-0.2, 0.18, 0);
-    signGroup.add(chain1);
-    const chain2 = chain1.clone();
-    chain2.position.x = 0.2;
-    signGroup.add(chain2);
+    const chain1 = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.14, 6), new THREE.MeshBasicMaterial({ color: 0x333333 }));
+    chain1.position.set(-0.14, 0.14, 0); signGroup.add(chain1);
+    const chain2 = chain1.clone(); chain2.position.x = 0.14; signGroup.add(chain2);
     warungGroup.add(signGroup);
 
     // ==========================================
@@ -739,7 +601,6 @@
     // ==========================================
     const clickableItems = [];
 
-    // Helper to register interactive item
     function registerItem(mesh, productId, name, priceIdr) {
       mesh.userData = {
         isProduct: true,
@@ -752,413 +613,188 @@
     }
 
     // --- LEFT SHELVES (3 TIERS) ---
-    const leftShelfX = -1.55;
-    const shelfWidth = 0.85;
-    const shelfDepth = 0.42;
+    // Carefully positioned between x = -0.78 and x = -1.15 so 100% visible
+    const leftShelfX = -0.96;
+    const shelfBoardW = 0.44;
+    const shelfBoardD = 0.32;
 
-    const leftShelfTiers = [
-      { y: 1.52, id: 'rak_kiri_atas' },
-      { y: 1.18, id: 'rak_kiri_tengah' },
-      { y: 0.84, id: 'rak_kiri_bawah' }
-    ];
-
-    leftShelfTiers.forEach(tier => {
-      const shelfBoard = new THREE.Mesh(
-        new THREE.BoxGeometry(shelfWidth, 0.04, shelfDepth),
-        woodMaterial
-      );
-      shelfBoard.position.set(leftShelfX, tier.y, -0.38);
-      warungGroup.add(shelfBoard);
+    const leftTiersY = [1.46, 1.16, 0.86];
+    leftTiersY.forEach(y => {
+      const board = new THREE.Mesh(new THREE.BoxGeometry(shelfBoardW, 0.035, shelfBoardD), woodMat);
+      board.position.set(leftShelfX, y, -0.30);
+      warungGroup.add(board);
     });
 
     // 1. TOP LEFT: Keripik (Rp 2.000)
-    const keripikTex = createKeripikTexture();
-    const keripikMat = new THREE.MeshStandardMaterial({ map: keripikTex, roughness: 0.5 });
+    const keripikMat = new THREE.MeshStandardMaterial({ map: createKeripikTexture(), roughness: 0.5 });
     const keripikTagTex = createPriceTagTexture('Rp 2.000');
-
-    for (let i = 0; i < 3; i++) {
-      const bag = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.24, 0.08), keripikMat);
-      bag.position.set(leftShelfX - 0.22 + i * 0.22, 1.66, -0.38);
-      bag.rotation.y = 0.1 - i * 0.08;
+    for (let i = 0; i < 2; i++) {
+      const bag = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.07), keripikMat);
+      bag.position.set(leftShelfX - 0.09 + i * 0.18, 1.58, -0.30);
+      bag.rotation.y = 0.08 - i * 0.12;
       registerItem(bag, 'keripik', 'Keripik', 2000);
       warungGroup.add(bag);
     }
-    // Keripik Price Tag
-    const keripikTag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.24, 0.09),
-      new THREE.MeshBasicMaterial({ map: keripikTagTex, transparent: true })
-    );
-    keripikTag.position.set(leftShelfX, 1.46, -0.16);
+    const keripikTag = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.075), new THREE.MeshBasicMaterial({ map: keripikTagTex, transparent: true }));
+    keripikTag.position.set(leftShelfX, 1.41, -0.13);
     warungGroup.add(keripikTag);
 
     // 2. MIDDLE LEFT: Biskuit (Rp 2.500)
-    const biskuitTex = createBiskuitTexture();
-    const biskuitMat = new THREE.MeshStandardMaterial({ map: biskuitTex, roughness: 0.5 });
+    const biskuitMat = new THREE.MeshStandardMaterial({ map: createBiskuitTexture(), roughness: 0.5 });
     const biskuitTagTex = createPriceTagTexture('Rp 2.500');
-
-    for (let i = 0; i < 3; i++) {
-      const box = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.22, 0.09), biskuitMat);
-      box.position.set(leftShelfX - 0.22 + i * 0.22, 1.31, -0.38);
-      box.rotation.y = 0.08 - i * 0.08;
+    for (let i = 0; i < 2; i++) {
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.20, 0.08), biskuitMat);
+      box.position.set(leftShelfX - 0.09 + i * 0.18, 1.28, -0.30);
       registerItem(box, 'biskuit', 'Biskuit', 2500);
       warungGroup.add(box);
     }
-    // Biskuit Price Tag
-    const biskuitTag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.24, 0.09),
-      new THREE.MeshBasicMaterial({ map: biskuitTagTex, transparent: true })
-    );
-    biskuitTag.position.set(leftShelfX, 1.12, -0.16);
+    const biskuitTag = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.075), new THREE.MeshBasicMaterial({ map: biskuitTagTex, transparent: true }));
+    biskuitTag.position.set(leftShelfX, 1.11, -0.13);
     warungGroup.add(biskuitTag);
 
-    // 3. BOTTOM LEFT: Susu Kotak Sapi (Rp 3.000)
-    const susuTex = createSusuTexture();
-    const susuMat = new THREE.MeshStandardMaterial({ map: susuTex, roughness: 0.4 });
+    // 3. BOTTOM LEFT: Susu Kotak (Rp 3.000)
+    const susuMat = new THREE.MeshStandardMaterial({ map: createSusuTexture(), roughness: 0.4 });
     const susuTagTex = createPriceTagTexture('Rp 3.000');
-
-    for (let i = 0; i < 3; i++) {
-      const susu = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.12), susuMat);
-      susu.position.set(leftShelfX - 0.22 + i * 0.22, 0.97, -0.38);
+    for (let i = 0; i < 2; i++) {
+      const susu = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.20, 0.10), susuMat);
+      susu.position.set(leftShelfX - 0.08 + i * 0.16, 0.98, -0.30);
       registerItem(susu, 'susu', 'Susu', 3000);
       warungGroup.add(susu);
     }
-    // Susu Price Tag
-    const susuTag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.24, 0.09),
-      new THREE.MeshBasicMaterial({ map: susuTagTex, transparent: true })
-    );
-    susuTag.position.set(leftShelfX, 0.78, -0.16);
+    const susuTag = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.075), new THREE.MeshBasicMaterial({ map: susuTagTex, transparent: true }));
+    susuTag.position.set(leftShelfX, 0.81, -0.13);
     warungGroup.add(susuTag);
 
     // --- RIGHT SHELVES (3 TIERS) ---
-    const rightShelfX = 1.55;
-
-    const rightShelfTiers = [
-      { y: 1.52, id: 'rak_kanan_atas' },
-      { y: 1.18, id: 'rak_kanan_tengah' },
-      { y: 0.84, id: 'rak_kanan_bawah' }
-    ];
-
-    rightShelfTiers.forEach(tier => {
-      const shelfBoard = new THREE.Mesh(
-        new THREE.BoxGeometry(shelfWidth, 0.04, shelfDepth),
-        woodMaterial
-      );
-      shelfBoard.position.set(rightShelfX, tier.y, -0.38);
-      warungGroup.add(shelfBoard);
+    // Carefully positioned between x = 0.78 and x = 1.15 so 100% visible
+    const rightShelfX = 0.96;
+    leftTiersY.forEach(y => {
+      const board = new THREE.Mesh(new THREE.BoxGeometry(shelfBoardW, 0.035, shelfBoardD), woodMat);
+      board.position.set(rightShelfX, y, -0.30);
+      warungGroup.add(board);
     });
 
     // 4. TOP RIGHT: Indomie Cup (Rp 3.500)
-    const indomieTex = createIndomieTexture();
-    const indomieMat = new THREE.MeshStandardMaterial({ map: indomieTex, roughness: 0.5 });
+    const indomieMat = new THREE.MeshStandardMaterial({ map: createIndomieTexture(), roughness: 0.5 });
     const indomieTagTex = createPriceTagTexture('Rp 3.500');
-
     for (let i = 0; i < 2; i++) {
-      const cup = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.10, 0.08, 0.20, 16),
-        indomieMat
-      );
-      cup.position.set(rightShelfX - 0.15 + i * 0.30, 1.64, -0.38);
+      const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.07, 0.18, 16), indomieMat);
+      cup.position.set(rightShelfX - 0.09 + i * 0.18, 1.57, -0.30);
       registerItem(cup, 'indomie', 'Indomie Cup', 3500);
       warungGroup.add(cup);
     }
-    // Indomie Price Tag
-    const indomieTag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.24, 0.09),
-      new THREE.MeshBasicMaterial({ map: indomieTagTex, transparent: true })
-    );
-    indomieTag.position.set(rightShelfX - 0.15, 1.46, -0.16);
+    const indomieTag = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.075), new THREE.MeshBasicMaterial({ map: indomieTagTex, transparent: true }));
+    indomieTag.position.set(rightShelfX, 1.41, -0.13);
     warungGroup.add(indomieTag);
 
     // 5. MIDDLE RIGHT: AQUA Botol (Rp 2.500)
-    const aquaLabelTex = createAquaTexture();
-    const aquaLabelMat = new THREE.MeshStandardMaterial({ map: aquaLabelTex, roughness: 0.3 });
+    const aquaLabelMat = new THREE.MeshStandardMaterial({ map: createAquaTexture(), roughness: 0.3 });
     const bottleGlassMat = new THREE.MeshStandardMaterial({
-      color: 0xbee1f7,
-      roughness: 0.1,
-      metalness: 0.1,
-      transparent: true,
-      opacity: 0.82
+      color: 0xa8dadc, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.85
     });
-    const bottleCapMat = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.5 });
+    const bottleCapMat = new THREE.MeshStandardMaterial({ color: 0x0077b6, roughness: 0.5 });
     const aquaTagTex = createPriceTagTexture('Rp 2.500');
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const bottleGroup = new THREE.Group();
-      bottleGroup.position.set(rightShelfX - 0.28 + i * 0.18, 1.30, -0.38);
-
-      // Bottle Body
-      const bBody = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.22, 12), bottleGlassMat);
+      bottleGroup.position.set(rightShelfX - 0.12 + i * 0.12, 1.27, -0.30);
+      const bBody = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.19, 12), bottleGlassMat);
       bottleGroup.add(bBody);
-      // Label band
-      const bLabel = new THREE.Mesh(new THREE.CylinderGeometry(0.053, 0.053, 0.10, 12), aquaLabelMat);
-      bLabel.position.y = -0.01;
+      const bLabel = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.085, 12), aquaLabelMat);
       bottleGroup.add(bLabel);
-      // Cap
-      const bCap = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.035, 12), bottleCapMat);
-      bCap.position.y = 0.125;
+      const bCap = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.03, 12), bottleCapMat);
+      bCap.position.y = 0.11;
       bottleGroup.add(bCap);
 
       registerItem(bBody, 'aqua', 'Air Mineral AQUA', 2500);
-      // Link entire group to raycast hit
       bBody.userData.parentGroup = bottleGroup;
       warungGroup.add(bottleGroup);
     }
-    // AQUA Price Tag
-    const aquaTag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.24, 0.09),
-      new THREE.MeshBasicMaterial({ map: aquaTagTex, transparent: true })
-    );
-    aquaTag.position.set(rightShelfX - 0.15, 1.12, -0.16);
+    const aquaTag = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.075), new THREE.MeshBasicMaterial({ map: aquaTagTex, transparent: true }));
+    aquaTag.position.set(rightShelfX, 1.11, -0.13);
     warungGroup.add(aquaTag);
 
     // 6. BOTTOM RIGHT: Peti Apel Segar (Rp 5.000)
     const crateGroup = new THREE.Group();
-    crateGroup.position.set(rightShelfX - 0.05, 0.94, -0.38);
-
-    // Rustic wooden crate
+    crateGroup.position.set(rightShelfX, 0.94, -0.30);
     const crateBox = new THREE.Mesh(
-      new THREE.BoxGeometry(0.56, 0.16, 0.38),
+      new THREE.BoxGeometry(0.38, 0.14, 0.28),
       new THREE.MeshStandardMaterial({ map: darkWoodTexture, roughness: 0.85 })
     );
     crateGroup.add(crateBox);
 
-    // Apples inside
-    const appleMat = new THREE.MeshStandardMaterial({
-      color: 0xeb3b5a,
-      roughness: 0.25,
-      metalness: 0.05
-    });
-
+    const appleMat = new THREE.MeshStandardMaterial({ color: 0xd90429, roughness: 0.25 });
     const appleOffsets = [
-      [-0.18, -0.08], [-0.06, -0.08], [0.06, -0.08], [0.18, -0.08],
-      [-0.12, 0.06], [0.0, 0.06], [0.12, 0.06]
+      [-0.10, -0.06], [0.0, -0.06], [0.10, -0.06],
+      [-0.06, 0.05], [0.06, 0.05]
     ];
-    appleOffsets.forEach(([ox, oz], idx) => {
-      const apple = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 10), appleMat);
-      apple.position.set(ox, 0.10, oz);
-      apple.scale.set(1.0, 0.95, 1.0);
+    appleOffsets.forEach(([ox, oz]) => {
+      const apple = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), appleMat);
+      apple.position.set(ox, 0.08, oz);
       crateGroup.add(apple);
       registerItem(apple, 'apel', 'Apel Segar', 5000);
     });
-
     warungGroup.add(crateGroup);
 
-    // Peti Apel Price Tag
     const apelTagTex = createPriceTagTexture('Rp 5.000');
-    const apelTag = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.24, 0.09),
-      new THREE.MeshBasicMaterial({ map: apelTagTex, transparent: true })
-    );
-    apelTag.position.set(rightShelfX + 0.12, 0.78, -0.16);
+    const apelTag = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.075), new THREE.MeshBasicMaterial({ map: apelTagTex, transparent: true }));
+    apelTag.position.set(rightShelfX, 0.81, -0.13);
     warungGroup.add(apelTag);
 
     // ==========================================
-    // 7. OUTDOOR VILLAGE BACKGROUND SCENE
-    // ==========================================
-    const villageGroup = new THREE.Group();
-    scene.add(villageGroup);
-
-    // Cobblestone ground
-    const plazaGround = new THREE.Mesh(
-      new THREE.PlaneGeometry(30, 30),
-      new THREE.MeshStandardMaterial({ map: createCobblestoneTexture(), roughness: 0.9 })
-    );
-    plazaGround.rotation.x = -Math.PI / 2;
-    plazaGround.position.set(0, 0, -6);
-    plazaGround.receiveShadow = true;
-    villageGroup.add(plazaGround);
-
-    // Blue & White Striped Market Stalls in Background
-    const awningTex = createAwningTexture();
-    awningTex.wrapS = THREE.RepeatWrapping;
-    awningTex.wrapT = THREE.RepeatWrapping;
-    awningTex.repeat.set(4, 2);
-    const awningMat = new THREE.MeshStandardMaterial({ map: awningTex, roughness: 0.8 });
-
-    function createMarketStall(x, z, rotY = 0) {
-      const stall = new THREE.Group();
-      stall.position.set(x, 0, z);
-      stall.rotation.y = rotY;
-
-      // Table
-      const table = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.65, 0.8), darkWoodMaterial);
-      table.position.y = 0.325;
-      stall.add(table);
-
-      // Posts
-      const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.4, 6), darkWoodMaterial);
-      p1.position.set(-0.75, 1.0, -0.35);
-      stall.add(p1);
-      const p2 = p1.clone();
-      p2.position.x = 0.75;
-      stall.add(p2);
-
-      // Striped Awning Canopy
-      const awning = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.06, 1.1), awningMat);
-      awning.position.set(0, 1.65, 0);
-      awning.rotation.x = 0.12;
-      stall.add(awning);
-
-      return stall;
-    }
-
-    villageGroup.add(createMarketStall(-2.8, -4.5, 0.15));
-    villageGroup.add(createMarketStall(2.6, -5.2, -0.2));
-
-    // Village Houses with Blue Gabled Roofs
-    function createVillageHouse(x, z) {
-      const house = new THREE.Group();
-      house.position.set(x, 0, z);
-
-      // Walls
-      const walls = new THREE.Mesh(
-        new THREE.BoxGeometry(2.6, 1.8, 2.2),
-        new THREE.MeshStandardMaterial({ color: 0xebf2fa, roughness: 0.9 })
-      );
-      walls.position.y = 0.9;
-      house.add(walls);
-
-      // Blue gabled roof
-      const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(2.1, 1.2, 4),
-        new THREE.MeshStandardMaterial({ color: 0x274c77, roughness: 0.7 })
-      );
-      roof.position.y = 2.4;
-      roof.rotation.y = Math.PI / 4;
-      house.add(roof);
-
-      return house;
-    }
-
-    villageGroup.add(createVillageHouse(-0.2, -6.5));
-    villageGroup.add(createVillageHouse(4.8, -8.0));
-    villageGroup.add(createVillageHouse(-5.2, -7.5));
-
-    // Green Voxel Trees
-    function createVoxelTree(x, z, scale = 1.0) {
-      const tree = new THREE.Group();
-      tree.position.set(x, 0, z);
-      tree.scale.set(scale, scale, scale);
-
-      // Trunk
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.14, 0.18, 1.8, 6),
-        darkWoodMaterial
-      );
-      trunk.position.y = 0.9;
-      tree.add(trunk);
-
-      // Leaves cubes
-      const leafColors = [0x2ecc71, 0x27ae60, 0x1abc9c];
-      for (let i = 0; i < 5; i++) {
-        const leafMat = new THREE.MeshStandardMaterial({
-          color: leafColors[i % leafColors.length],
-          roughness: 0.9
-        });
-        const leafBlock = new THREE.Mesh(new THREE.BoxGeometry(1.2 - i * 0.15, 0.5, 1.2 - i * 0.15), leafMat);
-        leafBlock.position.set(
-          (Math.random() - 0.5) * 0.2,
-          1.8 + i * 0.35,
-          (Math.random() - 0.5) * 0.2
-        );
-        tree.add(leafBlock);
-      }
-      return tree;
-    }
-
-    villageGroup.add(createVoxelTree(-3.8, -4.8, 1.1));
-    villageGroup.add(createVoxelTree(3.8, -4.5, 1.0));
-    villageGroup.add(createVoxelTree(-1.8, -7.5, 0.9));
-
-    // Distant Villager NPC (Pak Tani with straw hat)
-    const distantNpc = new THREE.Group();
-    distantNpc.position.set(1.4, 0, -4.8);
-    // Body
-    const npcBody = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.45, 0.2), new THREE.MeshStandardMaterial({ color: 0x27ae60 }));
-    npcBody.position.y = 0.55;
-    distantNpc.add(npcBody);
-    // Legs
-    const npcLegs = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.35, 0.18), new THREE.MeshStandardMaterial({ color: 0x2c3e50 }));
-    npcLegs.position.y = 0.18;
-    distantNpc.add(npcLegs);
-    // Head
-    const npcHead = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
-    npcHead.position.y = 0.88;
-    distantNpc.add(npcHead);
-    // Conical Straw Hat
-    const npcHat = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.15, 12), new THREE.MeshStandardMaterial({ color: 0xf1c40f }));
-    npcHat.position.y = 1.05;
-    distantNpc.add(npcHat);
-    villageGroup.add(distantNpc);
-
-    // Pixel Clouds in the Sky
-    const clouds = [];
-    for (let c = 0; c < 4; c++) {
-      const cloudGroup = new THREE.Group();
-      const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
-      for (let b = 0; b < 4; b++) {
-        const box = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 0.8), cloudMat);
-        box.position.set((b - 1.5) * 0.9, (Math.random() - 0.5) * 0.2, 0);
-        cloudGroup.add(box);
-      }
-      cloudGroup.position.set((c - 1.5) * 7, 4.5 + Math.random() * 1.5, -12);
-      scene.add(cloudGroup);
-      clouds.push(cloudGroup);
-    }
-
-    // ==========================================
-    // 8. VOXEL CUSTOMER CHARACTER & SPEECH BUBBLE
+    // 7. VOXEL CUSTOMER (ANIME BOY)
     // ==========================================
     const customerGroup = new THREE.Group();
-    customerGroup.position.set(0, 0.28, -1.35); // Directly in center opening
+    customerGroup.position.set(0, 0.52, -0.92); // Right at counter opening
     scene.add(customerGroup);
 
-    // Head
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xffe0bd, roughness: 0.7 });
-    const custHead = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.40, 0.38), headMat);
-    custHead.position.y = 0.92;
+    // Anime Head
+    const custHead = new THREE.Mesh(
+      new THREE.BoxGeometry(0.34, 0.32, 0.30),
+      new THREE.MeshStandardMaterial({ color: 0xffe0bd, roughness: 0.7 })
+    );
+    custHead.position.y = 0.68;
     customerGroup.add(custHead);
 
     // Anime Eyes
-    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x221c1a });
-    const eyeL = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.08), eyeMat);
-    eyeL.position.set(-0.11, 0.92, 0.192);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1f1917 });
+    const eyeL = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.07), eyeMat);
+    eyeL.position.set(-0.09, 0.68, 0.152);
     customerGroup.add(eyeL);
     const eyeR = eyeL.clone();
-    eyeR.position.x = 0.11;
+    eyeR.position.x = 0.09;
     customerGroup.add(eyeR);
 
-    // Messy Hair Bangs (Dark Brown)
-    const hairMat = new THREE.MeshStandardMaterial({ color: 0x3d271e, roughness: 0.8 });
-    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.18, 0.42), hairMat);
-    hairTop.position.set(0, 1.10, -0.01);
+    // Dark Brown Hair Bangs
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0x362219, roughness: 0.8 });
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.14, 0.34), hairMat);
+    hairTop.position.set(0, 0.82, -0.01);
     customerGroup.add(hairTop);
 
     for (let h = -2; h <= 2; h++) {
-      const bang = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.14, 0.06), hairMat);
-      bang.position.set(h * 0.08, 1.02, 0.18);
+      const bang = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.12, 0.05), hairMat);
+      bang.position.set(h * 0.065, 0.76, 0.145);
       customerGroup.add(bang);
     }
 
-    // Hoodie Jacket Body (Dark Charcoal)
+    // Hoodie Jacket Torso
     const hoodieMat = new THREE.MeshStandardMaterial({ color: 0x2d3436, roughness: 0.8 });
-    const custTorso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.54, 0.28), hoodieMat);
-    custTorso.position.y = 0.45;
+    const custTorso = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.44, 0.24), hoodieMat);
+    custTorso.position.y = 0.30;
     customerGroup.add(custTorso);
 
-    // White Undershirt line
-    const shirtMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.32), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    shirtMesh.position.set(0, 0.46, 0.142);
+    // White Undershirt
+    const shirtMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.10, 0.26), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    shirtMesh.position.set(0, 0.31, 0.122);
     customerGroup.add(shirtMesh);
 
     // Arms
-    const custArmL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.44, 0.14), hoodieMat);
-    custArmL.position.set(-0.31, 0.42, 0);
-    customerGroup.add(custArmL);
-    const custArmR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.44, 0.14), hoodieMat);
-    custArmR.position.set(0.31, 0.42, 0);
-    customerGroup.add(custArmR);
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.36, 0.11), hoodieMat);
+    armL.position.set(-0.24, 0.28, 0);
+    customerGroup.add(armL);
+    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.36, 0.11), hoodieMat);
+    armR.position.set(0.24, 0.28, 0);
+    customerGroup.add(armR);
 
     // Speech Bubble with Shopping Cart 🛒
     const bubbleMat = new THREE.MeshBasicMaterial({
@@ -1167,31 +803,28 @@
       side: THREE.DoubleSide
     });
     const speechBubble = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.72, 0.54),
+      new THREE.PlaneGeometry(0.55, 0.42),
       bubbleMat
     );
-    speechBubble.position.set(0.28, 1.52, 0);
+    speechBubble.position.set(0.18, 1.18, 0);
     customerGroup.add(speechBubble);
 
-    // Register customer as interactive trigger
     custHead.userData = { isCustomerTrigger: true };
     custTorso.userData = { isCustomerTrigger: true };
     speechBubble.userData = { isCustomerTrigger: true };
     clickableItems.push(custHead, custTorso, speechBubble, counterMat, registerGroup);
 
-    // Customer animation variables
-    let customerState = 'IDLE'; // 'WALKING_IN', 'IDLE', 'HAPPY', 'LEAVING'
-    let customerWalkProgress = 0;
+    let customerState = 'IDLE';
 
     window.startCustomer = function(orderData) {
       customerState = 'WALKING_IN';
-      customerGroup.position.set(0, 0.28, -3.2);
+      customerGroup.position.set(0, 0.52, -1.8);
       customerGroup.visible = true;
       speechBubble.scale.set(0.001, 0.001, 0.001);
       bubbleMat.map = createCartBubbleTexture();
       bubbleMat.needsUpdate = true;
       window.playSfx('door_bell');
-      showToast('🔔 Pembeli baru datang: ' + (orderData.customerName || 'Pelanggan'));
+      showToast('🔔 Pembeli datang: ' + (orderData.customerName || 'Pelanggan'));
     };
 
     window.customerHappy = function() {
@@ -1207,25 +840,90 @@
       window.playSfx('coin');
     };
 
-    window.goToCashier = function() {
-      sendToFlutter({ type: 'CASHIER_ARRIVED' });
-    };
-
-    window.goToShelf = function(shelfId) {
-      sendToFlutter({ type: 'SHELF_ARRIVED', shelfId: shelfId });
-      showToast('🔎 Menampilkan barang di rak');
-    };
-
-    window.setNavigationMode = function(mode) {
-      // In counter view, interactions are instant touch/click
-    };
-
-    window.setFloorGuide = function(enabled) {
-      // Guide highlight if needed
-    };
+    window.goToCashier = function() { sendToFlutter({ type: 'CASHIER_ARRIVED' }); };
+    window.goToShelf = function(shelfId) { sendToFlutter({ type: 'SHELF_ARRIVED', shelfId: shelfId }); };
+    window.setNavigationMode = function(mode) {};
+    window.setFloorGuide = function(enabled) {};
 
     // ==========================================
-    // 9. RAYCASTING & TOUCH/CLICK INTERACTION
+    // 8. OUTDOOR VILLAGE BACKGROUND
+    // ==========================================
+    const villageGroup = new THREE.Group();
+    scene.add(villageGroup);
+
+    // Cobblestone ground
+    const plazaGround = new THREE.Mesh(
+      new THREE.PlaneGeometry(24, 24),
+      new THREE.MeshStandardMaterial({ map: createCobbleTexture(), roughness: 0.9 })
+    );
+    plazaGround.rotation.x = -Math.PI / 2;
+    plazaGround.position.set(0, 0, -4.5);
+    villageGroup.add(plazaGround);
+
+    // Market stalls with blue-and-white canopies
+    const awningTex = createAwningTexture();
+    awningTex.wrapS = THREE.RepeatWrapping; awningTex.wrapT = THREE.RepeatWrapping;
+    awningTex.repeat.set(4, 2);
+    const awningMat = new THREE.MeshStandardMaterial({ map: awningTex, roughness: 0.8 });
+
+    function createStall(x, z, rotY = 0) {
+      const stall = new THREE.Group();
+      stall.position.set(x, 0, z); stall.rotation.y = rotY;
+      const table = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 0.7), darkWoodMat);
+      table.position.y = 0.3; stall.add(table);
+      const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.3, 6), darkWoodMat);
+      p1.position.set(-0.65, 0.95, -0.3); stall.add(p1);
+      const p2 = p1.clone(); p2.position.x = 0.65; stall.add(p2);
+      const awning = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 0.9), awningMat);
+      awning.position.set(0, 1.55, 0); awning.rotation.x = 0.12; stall.add(awning);
+      return stall;
+    }
+    villageGroup.add(createStall(-2.0, -3.2, 0.12));
+    villageGroup.add(createStall(1.9, -3.5, -0.15));
+
+    // Green Voxel Trees
+    function createTree(x, z) {
+      const tree = new THREE.Group();
+      tree.position.set(x, 0, z);
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 1.6, 6), darkWoodMat);
+      trunk.position.y = 0.8; tree.add(trunk);
+      const leafCols = [0x2d6a4f, 0x40916c, 0x52b788];
+      for (let i = 0; i < 4; i++) {
+        const mat = new THREE.MeshStandardMaterial({ color: leafCols[i % leafCols.length], roughness: 0.85 });
+        const b = new THREE.Mesh(new THREE.BoxGeometry(1.0 - i * 0.15, 0.45, 1.0 - i * 0.15), mat);
+        b.position.set(0, 1.6 + i * 0.32, 0);
+        tree.add(b);
+      }
+      return tree;
+    }
+    villageGroup.add(createTree(-2.8, -3.5));
+    villageGroup.add(createTree(2.8, -3.8));
+
+    // Village Houses with Blue Gables
+    function createHouse(x, z) {
+      const house = new THREE.Group();
+      house.position.set(x, 0, z);
+      const walls = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.6, 1.8), new THREE.MeshStandardMaterial({ color: 0xf4f1de, roughness: 0.9 }));
+      walls.position.y = 0.8; house.add(walls);
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(1.8, 1.0, 4), new THREE.MeshStandardMaterial({ color: 0x1d3557, roughness: 0.7 }));
+      roof.position.y = 2.1; roof.rotation.y = Math.PI / 4; house.add(roof);
+      return house;
+    }
+    villageGroup.add(createHouse(0, -4.8));
+
+    // Distant Pak Tani in Straw Hat
+    const distantNpc = new THREE.Group();
+    distantNpc.position.set(1.0, 0, -3.6);
+    const nBody = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.38, 0.16), new THREE.MeshStandardMaterial({ color: 0x2a9d8f }));
+    nBody.position.y = 0.46; distantNpc.add(nBody);
+    const nHead = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.16), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+    nHead.position.y = 0.74; distantNpc.add(nHead);
+    const nHat = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.12, 12), new THREE.MeshStandardMaterial({ color: 0xf4a261 }));
+    nHat.position.y = 0.88; distantNpc.add(nHat);
+    villageGroup.add(distantNpc);
+
+    // ==========================================
+    // 9. RAYCASTING & TOUCH INTERACTION
     // ==========================================
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -1243,36 +941,26 @@
 
       if (intersects.length > 0) {
         let hit = intersects[0].object;
-        // Check for parent user data
         let target = hit;
         while (target && !target.userData.isProduct && !target.userData.isCashierTrigger && !target.userData.isCustomerTrigger && target.parent) {
-          if (target.userData.parentGroup) {
-            target = target.userData.parentGroup;
-            break;
-          }
+          if (target.userData.parentGroup) { target = target.userData.parentGroup; break; }
           target = target.parent;
         }
 
         const uData = target.userData && (target.userData.isProduct || target.userData.isCashierTrigger || target.userData.isCustomerTrigger)
-          ? target.userData
-          : hit.userData;
+          ? target.userData : hit.userData;
 
         if (uData.isProduct) {
-          // Play item pickup sound
           window.playSfx('item_click');
           triggerSparkle(clientX, clientY);
-          showToast('📦 Mengambil ' + uData.name + ' (' + uData.productId + ')');
+          showToast('📦 Mengambil ' + uData.name);
 
-          // Cute pickup bounce animation
+          // Cute item bounce
           const origY = hit.position.y;
-          hit.position.y += 0.08;
-          setTimeout(() => { hit.position.y = origY; }, 180);
+          hit.position.y += 0.06;
+          setTimeout(() => { hit.position.y = origY; }, 160);
 
-          // Notify Flutter
-          sendToFlutter({
-            type: 'ITEM_CLICKED',
-            productId: uData.productId
-          });
+          sendToFlutter({ type: 'ITEM_CLICKED', productId: uData.productId });
         } else if (uData.isCashierTrigger) {
           window.playSfx('kaching');
           sendToFlutter({ type: 'CASHIER_ARRIVED' });
@@ -1281,11 +969,10 @@
         }
       }
     }
-
     window.addEventListener('pointerdown', onPointerDown);
 
     // ==========================================
-    // 10. ANIMATION LOOP & FPS COUNTER
+    // 10. ANIMATION LOOP
     // ==========================================
     let lastTime = performance.now();
     let frameCount = 0;
@@ -1293,50 +980,36 @@
 
     function animate(now) {
       requestAnimationFrame(animate);
-
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // Customer state animations
       if (customerState === 'WALKING_IN') {
-        customerGroup.position.z += delta * 2.2;
-        customerWalkProgress += delta * 10;
-        custHead.position.y = 0.92 + Math.abs(Math.sin(customerWalkProgress)) * 0.03;
-        custArmL.rotation.x = Math.sin(customerWalkProgress) * 0.4;
-        custArmR.rotation.x = -Math.sin(customerWalkProgress) * 0.4;
-
-        if (customerGroup.position.z >= -1.35) {
-          customerGroup.position.z = -1.35;
+        customerGroup.position.z += delta * 2.0;
+        custHead.position.y = 0.68 + Math.abs(Math.sin(now * 0.01)) * 0.02;
+        if (customerGroup.position.z >= -0.92) {
+          customerGroup.position.z = -0.92;
           customerState = 'IDLE';
-          custHead.position.y = 0.92;
-          custArmL.rotation.x = 0;
-          custArmR.rotation.x = 0;
+          custHead.position.y = 0.68;
           sendToFlutter({ type: 'CUSTOMER_ARRIVED' });
         }
       } else if (customerState === 'IDLE') {
-        // Gentle breathing bob
-        const breath = Math.sin(now * 0.003) * 0.012;
-        custHead.position.y = 0.92 + breath;
-        custTorso.position.y = 0.45 + breath * 0.6;
-        // Speech bubble float & pop
-        speechBubble.position.y = 1.52 + Math.sin(now * 0.004) * 0.025;
+        const breath = Math.sin(now * 0.003) * 0.01;
+        custHead.position.y = 0.68 + breath;
+        custTorso.position.y = 0.30 + breath * 0.5;
+        speechBubble.position.y = 1.18 + Math.sin(now * 0.004) * 0.02;
         if (speechBubble.scale.x < 1.0) {
           const s = Math.min(1.0, speechBubble.scale.x + delta * 6);
           speechBubble.scale.set(s, s, s);
         }
       } else if (customerState === 'HAPPY') {
-        // Joyful hop
-        const hop = Math.abs(Math.sin(now * 0.012)) * 0.12;
-        customerGroup.position.y = 0.28 + hop;
-        custArmL.rotation.z = -0.5 + Math.sin(now * 0.015) * 0.3;
-        custArmR.rotation.z = 0.5 - Math.sin(now * 0.015) * 0.3;
+        const hop = Math.abs(Math.sin(now * 0.012)) * 0.10;
+        customerGroup.position.y = 0.52 + hop;
+        armL.rotation.z = -0.4 + Math.sin(now * 0.015) * 0.2;
+        armR.rotation.z = 0.4 - Math.sin(now * 0.015) * 0.2;
       } else if (customerState === 'LEAVING') {
-        customerGroup.position.z -= delta * 2.5;
-        customerGroup.rotation.y = Math.PI; // turn around
-        customerWalkProgress += delta * 10;
-        custHead.position.y = 0.92 + Math.abs(Math.sin(customerWalkProgress)) * 0.03;
-
-        if (customerGroup.position.z <= -4.0) {
+        customerGroup.position.z -= delta * 2.2;
+        customerGroup.rotation.y = Math.PI;
+        if (customerGroup.position.z <= -3.5) {
           customerGroup.visible = false;
           customerGroup.rotation.y = 0;
           customerState = 'GONE';
@@ -1344,18 +1017,8 @@
         }
       }
 
-      // Slowly drift clouds
-      clouds.forEach(cloud => {
-        cloud.position.x += delta * 0.2;
-        if (cloud.position.x > 14) cloud.position.x = -14;
-      });
-
-      // Distant NPC idle
-      distantNpc.rotation.y = Math.sin(now * 0.001) * 0.2;
-
       renderer.render(scene, camera);
 
-      // FPS tracking
       frameCount++;
       if (now - lastFpsUpdate >= 1000) {
         const fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
@@ -1365,14 +1028,8 @@
       }
     }
 
-    // Window Resize Handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // Notify Flutter that 3D scene is ready
+    // Init Viewport & start
+    updateCameraViewport();
     setTimeout(() => {
       sendToFlutter({ type: 'SCENE_READY' });
       requestAnimationFrame(animate);

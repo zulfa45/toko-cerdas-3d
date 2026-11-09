@@ -10,11 +10,12 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(gameControllerProvider);
+    final currentDay = state.currentDay;
     final displayCoins = state.coins > 0 ? state.coins : 12500;
     final coinsText = Product.formatRupiah(displayCoins, withSpace: true);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2B1B17),
+      backgroundColor: const Color(0xFF1E100B),
       body: SafeArea(
         child: Container(
           width: double.infinity,
@@ -24,346 +25,464 @@ class HomeScreen extends ConsumerWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFF3E2723),
-                Color(0xFF2B1B17),
-                Color(0xFF1B0F0B),
+                Color(0xFF381F15),
+                Color(0xFF24140D),
+                Color(0xFF150A06),
               ],
             ),
           ),
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Top Header Bar: Logo & Shop Name + Coins + Parent Gate
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Store Name Badge with Voxel Logo
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF3D2314),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFC68A4C), width: 2),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3)),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 26,
-                                height: 26,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Text('🏪', style: TextStyle(fontSize: 18)),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              state.shopName,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFFF1C40F),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
+          child: Column(
+            children: [
+              // 1. TOP STATUS BAR (Coin, Audio, Parent Lock)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Shopkeeper Identity Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2E1911),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFC68A4C), width: 1.5),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
+                        ],
                       ),
-
-                      // Right Badges: Coins & Parent Lock
-                      Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Coin Badge (Matching Warung Counter UI)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3D2314),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFC68A4C), width: 2),
-                              boxShadow: const [
-                                BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3)),
-                              ],
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Text('🏪', style: TextStyle(fontSize: 16)),
                             ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 22,
-                                  height: 22,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFFF1C40F),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      '\$',
-                                      style: TextStyle(
-                                        color: Color(0xFF7D6608),
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 13,
-                                      ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            state.shopName,
+                            style: const TextStyle(
+                              color: Color(0xFFF1C40F),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Right Badges (Coins, Sound, Parent Gate)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Coin Wallet Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E1911),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFC68A4C), width: 1.5),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 20,
+                                height: 20,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFF1C40F),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '\$',
+                                    style: TextStyle(
+                                      color: Color(0xFF7D6608),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                coinsText,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Audio Toggle Button
+                        IconButton(
+                          onPressed: () {
+                            ref.read(gameControllerProvider.notifier).toggleAudio();
+                          },
+                          icon: Icon(
+                            state.isAudioEnabled ? Icons.volume_up : Icons.volume_off,
+                            color: state.isAudioEnabled ? const Color(0xFFF1C40F) : Colors.white38,
+                            size: 18,
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E1911),
+                            side: const BorderSide(color: Color(0xFFC68A4C), width: 1.2),
+                            padding: const EdgeInsets.all(6),
+                          ),
+                          tooltip: 'Musik & Suara',
+                        ),
+                        const SizedBox(width: 6),
+
+                        // Parent Lock Button
+                        IconButton(
+                          onPressed: () => _showParentSecurityDialog(context, ref),
+                          icon: const Icon(Icons.lock, color: Color(0xFFC68A4C), size: 18),
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E1911),
+                            side: const BorderSide(color: Color(0xFFC68A4C), width: 1.2),
+                            padding: const EdgeInsets.all(6),
+                          ),
+                          tooltip: 'Area Orang Tua',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // 2. MAIN SCROLLABLE BODY
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                  child: Column(
+                    children: [
+                      // HERO BANNER: 3D Voxel Warung Showcase
+                      Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(maxWidth: 680),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2E1911),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFC68A4C), width: 2),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, 4)),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            // 3D Voxel Logo Icon
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: const Color(0xFFF1C40F), width: 2),
+                                boxShadow: const [
+                                  BoxShadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 4)),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Center(child: Text('🏪', style: TextStyle(fontSize: 40))),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+
+                            // Title & Description
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text('🏪', style: TextStyle(fontSize: 20)),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'TOKO CERDAS 3D',
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFFF1C40F),
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Simulasi Toko Sembako Voxel First-Person untuk Anak!',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'Ambil barang di rak, hitung total belanja, dan berikan uang kembalian pas.',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFFD7CCC8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // AGE GROUP TOGGLE CARDS
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 680),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildAgeCard(
+                                title: '🧒 Toko Pemula',
+                                subtitle: 'Umur 6–8 Tahun • Pesanan 1–2 barang, angka ribuan bulat',
+                                isSelected: state.ageGroup == '6-8',
+                                onTap: () => ref.read(gameControllerProvider.notifier).setAgeGroup('6-8'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildAgeCard(
+                                title: '🧑 Kasir Mahir',
+                                subtitle: 'Umur 9–12 Tahun • Pesanan banyak, perkalian, kembalian pecahan',
+                                isSelected: state.ageGroup == '9-12',
+                                onTap: () => ref.read(gameControllerProvider.notifier).setAgeGroup('9-12'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // 5-DAY STAGE MAP
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 680),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Text('🗺️', style: TextStyle(fontSize: 16)),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Pilih Hari Berjualan (Hari 1 — 5):',
+                                  style: TextStyle(
+                                    color: Color(0xFFF1C40F),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Stage Cards
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: LevelConfig.allLevels.map((lvl) {
+                                  final isSelected = currentDay == lvl.day;
+                                  final stars = state.starsPerDay[lvl.day] ?? 0;
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      ref.read(gameControllerProvider.notifier).startDayBriefing(lvl.day);
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      width: 120,
+                                      margin: const EdgeInsets.only(right: 10),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? const Color(0xFF4A2818) : const Color(0xFF26140D),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isSelected ? const Color(0xFFF1C40F) : const Color(0xFF8D4F27),
+                                          width: isSelected ? 2.5 : 1.2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: isSelected ? const Color(0xFFF1C40F).withValues(alpha: 0.3) : Colors.black38,
+                                            blurRadius: isSelected ? 8 : 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: isSelected ? const Color(0xFFF1C40F) : const Color(0xFF3E2723),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              'HARI ${lvl.day}',
+                                              style: TextStyle(
+                                                color: isSelected ? const Color(0xFF2B1B17) : Colors.white70,
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            lvl.title.split('—').last.trim(),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.1,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: List.generate(3, (starIdx) {
+                                              return Icon(
+                                                Icons.star_rounded,
+                                                size: 16,
+                                                color: starIdx < stars ? const Color(0xFFF1C40F) : Colors.white24,
+                                              );
+                                            }),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // BIG ACTION CTA BUTTON
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            ref.read(gameControllerProvider.notifier).startDayBriefing(currentDay);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF27AE60),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: Colors.white, width: 2),
+                            ),
+                            elevation: 8,
+                            shadowColor: const Color(0xFF27AE60).withValues(alpha: 0.6),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.storefront, size: 26),
                                 const SizedBox(width: 8),
                                 Text(
-                                  coinsText,
+                                  'BUKA TOKO HARI $currentDay ▶',
                                   style: const TextStyle(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w900,
-                                    fontSize: 14,
-                                    color: Colors.white,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 10),
-
-                          // Parent Gate Lock Button
-                          IconButton(
-                            onPressed: () => _showParentSecurityDialog(context, ref),
-                            icon: const Icon(Icons.lock, color: Color(0xFFC68A4C), size: 20),
-                            tooltip: 'Area Orang Tua',
-                            style: IconButton.styleFrom(
-                              backgroundColor: const Color(0xFF3D2314),
-                              side: const BorderSide(color: Color(0xFFC68A4C), width: 1.5),
-                              elevation: 3,
-                              padding: const EdgeInsets.all(8),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                      const SizedBox(height: 10),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // Center Banner: 3D Voxel Logo + Title
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 3D Voxel Logo
-                      Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: const Color(0xFFC68A4C), width: 2.5),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black54,
-                              blurRadius: 12,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(19),
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: const Color(0xFF8D4F27),
-                              child: const Center(
-                                child: Text('🏪', style: TextStyle(fontSize: 44)),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 18),
-
-                      // Title & Subtitle in Voxel Theme
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3D2314),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFC68A4C), width: 1.5),
-                            ),
-                            child: const Text(
-                              'TOKO CERDAS 3D',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFFF1C40F),
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Simulasi Warung Sembako & Belajar Berhitung Rupiah',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFD7CCC8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Age Group Selector (Wooden Pill Tabs)
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1F120E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF8D4F27), width: 1.5),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildAgeOption(
-                          label: '🧒 Umur 6–8 Tahun\n(Mode Bantuan Penuh)',
-                          isSelected: state.ageGroup == '6-8',
-                          onTap: () => ref.read(gameControllerProvider.notifier).setAgeGroup('6-8'),
-                        ),
-                        const SizedBox(width: 6),
-                        _buildAgeOption(
-                          label: '🧑 Umur 9–12 Tahun\n(Kasir Mandiri)',
-                          isSelected: state.ageGroup == '9-12',
-                          onTap: () => ref.read(gameControllerProvider.notifier).setAgeGroup('9-12'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // 5-Day Level Selector Cards (Wooden Plank Cards)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: LevelConfig.allLevels.map((lvl) {
-                      final isSelected = state.currentDay == lvl.day;
-                      final stars = state.starsPerDay[lvl.day] ?? 0;
-
-                      return GestureDetector(
-                        onTap: () {
-                          ref.read(gameControllerProvider.notifier).startDayBriefing(lvl.day);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 95,
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-                          decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF4E2A10) : const Color(0xFF2C1914),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected ? const Color(0xFFF1C40F) : const Color(0xFF8D4F27),
-                              width: isSelected ? 2.5 : 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: isSelected ? const Color(0xFFF1C40F).withValues(alpha: 0.3) : Colors.black26,
-                                blurRadius: isSelected ? 8 : 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Hari ${lvl.day}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 14,
-                                  color: isSelected ? const Color(0xFFF1C40F) : Colors.white70,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(3, (starIdx) {
-                                  return Icon(
-                                    Icons.star,
-                                    size: 15,
-                                    color: starIdx < stars ? const Color(0xFFF1C40F) : Colors.white24,
-                                  );
-                                }),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Big Play Button
-                  SizedBox(
-                    width: 310,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        ref.read(gameControllerProvider.notifier).startDayBriefing(state.currentDay);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF27AE60),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(color: Colors.white, width: 2),
-                        ),
-                        elevation: 6,
-                        shadowColor: const Color(0xFF27AE60).withValues(alpha: 0.5),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.storefront, size: 26),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Buka Warung Hari ${state.currentDay} ▶',
-                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAgeOption({
-    required String label,
+  Widget _buildAgeCard({
+    required String title,
+    required String subtitle,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFC68A4C) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? const Color(0xFF2B1B17) : const Color(0xFFD7CCC8),
+          color: isSelected ? const Color(0xFF4A2818) : const Color(0xFF26140D),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFF1C40F) : const Color(0xFF8D4F27),
+            width: isSelected ? 2 : 1.2,
           ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  color: isSelected ? const Color(0xFFF1C40F) : Colors.white38,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isSelected ? const Color(0xFFF1C40F) : Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFFD7CCC8),
+                fontSize: 10,
+                height: 1.15,
+              ),
+            ),
+          ],
         ),
       ),
     );

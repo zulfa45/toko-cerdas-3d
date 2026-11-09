@@ -126,20 +126,6 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // FPS Indicator
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '${state.measuredFps} FPS',
-                    style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
                 // Day & Clock Badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -184,6 +170,20 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
+
+                // Compact FPS Indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${state.measuredFps} FPS',
+                    style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
           ),
@@ -223,7 +223,7 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
                       const SizedBox(width: 6),
                       Text(
                         isBasketComplete
-                            ? 'Pesanan Lengkap! (Klik Buka Kasir)'
+                            ? 'Pesanan Lengkap! (Buka Kasir ▶)'
                             : 'Daftar Belanja: ${order.items.map((i) => '${i.quantity}x ${i.product?.name ?? i.productId}').join(', ')}',
                         style: const TextStyle(
                           color: Colors.white,
@@ -251,7 +251,7 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
               child: const ShoppingListWidget(),
             ),
 
-          // 4. BOTTOM BAR: Action Prompt + Shelf Shortcuts + Cashier Button
+          // 4. BOTTOM BAR: Action Prompt + Cashier Button (No category pills!)
           Positioned(
             left: 16,
             right: 16,
@@ -300,6 +300,7 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
                     ],
                   ),
                 ),
+
                 const Spacer(),
 
                 // Cashier Button
@@ -323,7 +324,7 @@ class _HudOverlayState extends ConsumerState<HudOverlay> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isBasketComplete ? const Color(0xFF27AE60) : const Color(0xFFC68A4C),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: const BorderSide(color: Colors.white, width: 1.5),
